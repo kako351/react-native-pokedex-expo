@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/env';
+import { ApiError } from '../api/ApiError';
 
 export const http = axios.create({
   baseURL: API_BASE_URL,
@@ -10,11 +11,18 @@ export const http = axios.create({
 http.interceptors.response.use(
   (res) => res,
   (err) => {
-    switch (err.response?.status) {
-      case 404:
-        return Promise.reject(new Error('Not found.'));
-      default:
-        return Promise.reject(err);
+    if(axios.isAxiosError(err)){
+
+      // ネットワークエラー
+      if(!err.response) {
+        return Promise.reject(ApiError.network(err.message))
+      }
+
+      return Promise.reject(
+        ApiError.fromStatus(err.response.status, err.message)
+      )
     }
+
+    return Promise.reject(ApiError.unknown())
   },
 );
