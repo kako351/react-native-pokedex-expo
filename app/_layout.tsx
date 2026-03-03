@@ -20,14 +20,15 @@ export default function RootLayout() {
 
   // 肥大化しそうな場合はProviders作成を検討する
   const [queryClient] = useState(
-    () => new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: 1,
-          staleTime: 30_000,
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            staleTime: 30_000,
+          },
         },
-      },
-    })
+      }),
   );
 
   return (
