@@ -54,6 +54,7 @@ When adding tests in the future, colocate them near features (for example `src/*
 
 - Commit history favors short, imperative messages, often in Japanese (for example `detail schema追加`, `format適応`).
 - Keep one logical change per commit.
+- When writing PR descriptions, follow the format in `.github/pull_request_template.md`.
 - PRs should include:
   - concise summary and motivation,
   - key changed paths,
