@@ -1,9 +1,11 @@
 # Repository Guidelines
 
 ## Language Requirement
+
 - All responses and code reviews must be written in Japanese.
 
 ## Project Structure & Module Organization
+
 - `app/`: Expo Router routes and screens (for example `app/(tabs)/index.tsx`).
 - `components/`: Reusable UI components and platform-specific variants.
 - `hooks/` and `constants/`: Shared hooks and theme/constants.
@@ -14,6 +16,7 @@
 Keep feature logic close to its domain (for example, PokeAPI schemas under `src/api/pokeapi/schema/`).
 
 ## Build, Test, and Development Commands
+
 - `npm run start`: Start Expo dev server.
 - `npm run ios` / `npm run android` / `npm run web`: Launch target platform.
 - `npm run lint`: Run Expo ESLint config checks.
@@ -25,6 +28,7 @@ Keep feature logic close to its domain (for example, PokeAPI schemas under `src/
 Run `npm run lint && npm run type-check && npm run format:check` before opening a PR.
 
 ## Coding Style & Naming Conventions
+
 - Language: TypeScript (`.ts`/`.tsx`) with React Native + Expo Router.
 - Formatting: Prettier (`singleQuote: true`, `trailingComma: all`).
 - Linting: `eslint-config-expo` (flat config in `eslint.config.js`).
@@ -36,8 +40,10 @@ Run `npm run lint && npm run type-check && npm run format:check` before opening 
 Prefer explicit `zod` schemas and inferred types (`z.infer`) for API payloads.
 
 ## Testing Guidelines
+
 There is currently no dedicated automated test framework configured in this repository.  
 Until tests are introduced, use this minimum validation set:
+
 - `npm run lint`
 - `npm run type-check`
 - manual smoke test on at least one target (`ios`, `android`, or `web`)
@@ -45,6 +51,7 @@ Until tests are introduced, use this minimum validation set:
 When adding tests in the future, colocate them near features (for example `src/**/__tests__/` or `*.test.ts`).
 
 ## Commit & Pull Request Guidelines
+
 - Commit history favors short, imperative messages, often in Japanese (for example `detail schema追加`, `format適応`).
 - Keep one logical change per commit.
 - PRs should include:
