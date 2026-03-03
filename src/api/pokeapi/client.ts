@@ -8,6 +8,7 @@ import {
   PokemonSpeciesSchema,
   type PokemonSpecies,
 } from './schema/pokemonspecies';
+import { pokeApiEndpoints } from './endpoints';
 
 /**
  * GET /pokemon
@@ -16,7 +17,7 @@ export async function fetchPokemonList(params: {
   limit: number;
   offset: number;
 }): Promise<PokemonList> {
-  const res = await http.get('/pokemon', { params });
+  const res = await http.get(pokeApiEndpoints.pokemon, { params });
   return PokemonListSchema.parse(res.data);
 }
 
@@ -24,7 +25,9 @@ export async function fetchPokemonList(params: {
  * GET /pokemon/{name}
  */
 export async function fetchPokemonDetail(name: string): Promise<PokemonDetail> {
-  const res = await http.get(`/pokemon/${encodeURIComponent(name)}`);
+  const res = await http.get(
+    `${pokeApiEndpoints.pokemon}/${encodeURIComponent(name)}`,
+  );
   return PokemonDetailSchema.parse(res.data);
 }
 
@@ -34,6 +37,8 @@ export async function fetchPokemonDetail(name: string): Promise<PokemonDetail> {
 export async function fetchPokemonSpecies(
   name: string,
 ): Promise<PokemonSpecies> {
-  const res = await http.get(`/pokemon-species/${encodeURIComponent(name)}`);
+  const res = await http.get(
+    `${pokeApiEndpoints.pokemonSpecies}/${encodeURIComponent(name)}`,
+  );
   return PokemonSpeciesSchema.parse(res.data);
 }
