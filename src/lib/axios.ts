@@ -11,18 +11,17 @@ export const http = axios.create({
 http.interceptors.response.use(
   (res) => res,
   (err) => {
-    if(axios.isAxiosError(err)){
-
+    if (axios.isAxiosError(err)) {
       // ネットワークエラー
-      if(!err.response) {
-        return Promise.reject(ApiError.network(err.message))
+      if (!err.response) {
+        return Promise.reject(ApiError.network(err.message));
       }
 
       return Promise.reject(
-        ApiError.fromStatus(err.response.status, err.message)
-      )
+        ApiError.fromStatus(err.response.status, err.message),
+      );
     }
 
-    return Promise.reject(ApiError.unknown())
+    return Promise.reject(ApiError.unknown());
   },
 );

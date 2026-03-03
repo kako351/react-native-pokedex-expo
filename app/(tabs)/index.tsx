@@ -11,15 +11,65 @@ type PokemonCard = {
 };
 
 const MOCK_POKEMON: PokemonCard[] = [
-  { id: 1, name: 'フシギダネ', displayNo: '#0001', types: ['くさ', 'どく'], accent: '#4f9c7d', bg: '#ddf6ea' },
-  { id: 4, name: 'ヒトカゲ', displayNo: '#0004', types: ['ほのお'], accent: '#db6d3f', bg: '#ffe9de' },
-  { id: 7, name: 'ゼニガメ', displayNo: '#0007', types: ['みず'], accent: '#4c82d9', bg: '#dfecff' },
-  { id: 25, name: 'ピカチュウ', displayNo: '#0025', types: ['でんき'], accent: '#d7a62e', bg: '#fff4cf' },
-  { id: 39, name: 'プリン', displayNo: '#0039', types: ['ノーマル', 'フェアリー'], accent: '#ba6d9a', bg: '#ffe2f2' },
-  { id: 133, name: 'イーブイ', displayNo: '#0133', types: ['ノーマル'], accent: '#9a7a52', bg: '#f7ecde' },
+  {
+    id: 1,
+    name: 'フシギダネ',
+    displayNo: '#0001',
+    types: ['くさ', 'どく'],
+    accent: '#4f9c7d',
+    bg: '#ddf6ea',
+  },
+  {
+    id: 4,
+    name: 'ヒトカゲ',
+    displayNo: '#0004',
+    types: ['ほのお'],
+    accent: '#db6d3f',
+    bg: '#ffe9de',
+  },
+  {
+    id: 7,
+    name: 'ゼニガメ',
+    displayNo: '#0007',
+    types: ['みず'],
+    accent: '#4c82d9',
+    bg: '#dfecff',
+  },
+  {
+    id: 25,
+    name: 'ピカチュウ',
+    displayNo: '#0025',
+    types: ['でんき'],
+    accent: '#d7a62e',
+    bg: '#fff4cf',
+  },
+  {
+    id: 39,
+    name: 'プリン',
+    displayNo: '#0039',
+    types: ['ノーマル', 'フェアリー'],
+    accent: '#ba6d9a',
+    bg: '#ffe2f2',
+  },
+  {
+    id: 133,
+    name: 'イーブイ',
+    displayNo: '#0133',
+    types: ['ノーマル'],
+    accent: '#9a7a52',
+    bg: '#f7ecde',
+  },
 ];
 
-const FILTER_TYPES = ['すべて', 'くさ', 'ほのお', 'みず', 'でんき', 'ノーマル', 'フェアリー'];
+const FILTER_TYPES = [
+  'すべて',
+  'くさ',
+  'ほのお',
+  'みず',
+  'でんき',
+  'ノーマル',
+  'フェアリー',
+];
 
 export default function PokedexScreen() {
   return (
@@ -27,11 +77,16 @@ export default function PokedexScreen() {
       <View style={styles.bgOrbTop} />
       <View style={styles.bgOrbBottom} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>Pokédex</Text>
-            <Text style={styles.subtitle}>見つけたポケモンをコレクションしよう</Text>
+            <Text style={styles.subtitle}>
+              見つけたポケモンをコレクションしよう
+            </Text>
           </View>
           <View style={styles.ball}>
             <View style={styles.ballInner} />
@@ -49,10 +104,24 @@ export default function PokedexScreen() {
           <MaterialIcons name="tune" size={20} color="#8a8f98" />
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
           {FILTER_TYPES.map((type, idx) => (
-            <View key={type} style={[styles.filterChip, idx === 0 && styles.filterChipActive]}>
-              <Text style={[styles.filterLabel, idx === 0 && styles.filterLabelActive]}>{type}</Text>
+            <View
+              key={type}
+              style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
+            >
+              <Text
+                style={[
+                  styles.filterLabel,
+                  idx === 0 && styles.filterLabelActive,
+                ]}
+              >
+                {type}
+              </Text>
             </View>
           ))}
         </ScrollView>
@@ -64,16 +133,26 @@ export default function PokedexScreen() {
 
         <View style={styles.grid}>
           {MOCK_POKEMON.map((pokemon) => (
-            <View key={pokemon.id} style={[styles.card, { backgroundColor: pokemon.bg }]}>
+            <View
+              key={pokemon.id}
+              style={[styles.card, { backgroundColor: pokemon.bg }]}
+            >
               <Text style={styles.cardNo}>{pokemon.displayNo}</Text>
-              <View style={[styles.avatar, { backgroundColor: pokemon.accent }]}>
+              <View
+                style={[styles.avatar, { backgroundColor: pokemon.accent }]}
+              >
                 <Text style={styles.avatarText}>{pokemon.name[0]}</Text>
               </View>
               <Text style={styles.cardName}>{pokemon.name}</Text>
               <View style={styles.typeRow}>
                 {pokemon.types.map((type) => (
-                  <View key={`${pokemon.id}-${type}`} style={[styles.typePill, { borderColor: pokemon.accent }]}>
-                    <Text style={[styles.typeText, { color: pokemon.accent }]}>{type}</Text>
+                  <View
+                    key={`${pokemon.id}-${type}`}
+                    style={[styles.typePill, { borderColor: pokemon.accent }]}
+                  >
+                    <Text style={[styles.typeText, { color: pokemon.accent }]}>
+                      {type}
+                    </Text>
                   </View>
                 ))}
               </View>

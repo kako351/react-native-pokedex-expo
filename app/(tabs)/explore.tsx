@@ -11,7 +11,12 @@ const BASE_STATS = [
   { label: 'すばやさ', value: 100, color: '#8f73d9' },
 ];
 
-const MOVE_LIST = ['かえんほうしゃ', 'ドラゴンクロー', 'エアスラッシュ', 'はねやすめ'];
+const MOVE_LIST = [
+  'かえんほうしゃ',
+  'ドラゴンクロー',
+  'エアスラッシュ',
+  'はねやすめ',
+];
 const HERO_IMAGE_URI =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png';
 
@@ -21,7 +26,10 @@ export default function PokemonDetailMockScreen() {
       <View style={styles.bgA} />
       <View style={styles.bgB} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View>
           <View style={styles.heroHeader}>
             <View>
@@ -29,10 +37,14 @@ export default function PokemonDetailMockScreen() {
               <Text style={styles.name}>リザードン</Text>
               <View style={styles.typeRow}>
                 <View style={[styles.typeChip, { backgroundColor: '#f6c89c' }]}>
-                  <Text style={[styles.typeText, { color: '#8a4e20' }]}>ほのお</Text>
+                  <Text style={[styles.typeText, { color: '#8a4e20' }]}>
+                    ほのお
+                  </Text>
                 </View>
                 <View style={[styles.typeChip, { backgroundColor: '#c9defb' }]}>
-                  <Text style={[styles.typeText, { color: '#2e5f9b' }]}>ひこう</Text>
+                  <Text style={[styles.typeText, { color: '#2e5f9b' }]}>
+                    ひこう
+                  </Text>
                 </View>
               </View>
             </View>
@@ -55,7 +67,8 @@ export default function PokemonDetailMockScreen() {
             <MaterialIcons name="favorite-border" size={20} color="#7c838f" />
           </View>
           <Text style={styles.description}>
-            つよい つばさで こうくうし、たかい ねつの ほのおを はきだす。ここはAPI接続後に図鑑説明文を表示。
+            つよい つばさで こうくうし、たかい ねつの ほのおを
+            はきだす。ここはAPI接続後に図鑑説明文を表示。
           </Text>
 
           <View style={styles.infoGrid}>
@@ -86,7 +99,15 @@ export default function PokemonDetailMockScreen() {
                 <Text style={styles.statLabel}>{stat.label}</Text>
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { width: `${Math.min(stat.value / 1.4, 100)}%`, backgroundColor: stat.color }]} />
+                  <View
+                    style={[
+                      styles.barFill,
+                      {
+                        width: `${Math.min(stat.value / 1.4, 100)}%`,
+                        backgroundColor: stat.color,
+                      },
+                    ]}
+                  />
                 </View>
               </View>
             ))}
