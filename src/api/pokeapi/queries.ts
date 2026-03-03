@@ -66,7 +66,7 @@ export function usePokemonDetail(name: string) {
   return useQuery({
     queryKey: pokemonKeys.detail(name),
     queryFn: () => fetchPokemonDetail(name),
-    enabled: name != null,
+    enabled: !!name,
   });
 }
 
