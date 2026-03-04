@@ -1,12 +1,19 @@
-import { PokemonListItem, usePokemonList } from "@/src/features/pokedex/usePokemonList";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Link } from "expo-router";
-import { ActivityIndicator, ScrollView, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Link } from 'expo-router';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
-// いったん固定色
-const DEFAULT_ACCENT = "#4c82d9";
-const DEFAULT_BG = "#dfecff";
+import {
+  type PokemonListItem,
+  usePokemonList,
+} from '@/src/features/pokedex/usePokemonList';
 
 const FILTER_TYPES = [
   'すべて',
@@ -17,6 +24,19 @@ const FILTER_TYPES = [
   'ノーマル',
   'フェアリー',
 ];
+
+const CARD_THEMES = [
+  { accent: '#4f9c7d', bg: '#ddf6ea', typeLabels: ['くさ', 'どく'] },
+  { accent: '#db6d3f', bg: '#ffe9de', typeLabels: ['ほのお'] },
+  { accent: '#4c82d9', bg: '#dfecff', typeLabels: ['みず'] },
+  { accent: '#d7a62e', bg: '#fff4cf', typeLabels: ['でんき'] },
+  { accent: '#ba6d9a', bg: '#ffe2f2', typeLabels: ['フェアリー'] },
+  { accent: '#9a7a52', bg: '#f7ecde', typeLabels: ['ノーマル'] },
+] as const;
+
+function getCardTheme(id: number) {
+  return CARD_THEMES[(id - 1) % CARD_THEMES.length];
+}
 
 export default function PokedexScreen() {
   const {
@@ -30,19 +50,25 @@ export default function PokedexScreen() {
   } = usePokemonList();
 
   return (
-    isLoading ? (
-      <ActivityIndicator />
-    ) : isError ? (
-      <Text>エラーが発生しました: error</Text>
-    ) : (
-      <SafeAreaView>
+    <View style={styles.page}>
+      <View style={styles.bgOrbTop} />
+      <View style={styles.bgOrbBottom} />
+
+      {isLoading ? (
+        <ActivityIndicator style={styles.centerLoader} />
+      ) : isError ? (
+        <Text style={styles.errorText}>
+          エラーが発生しました:{' '}
+          {error instanceof Error ? error.message : 'unknown'}
+        </Text>
+      ) : (
         <FlatList
           data={items}
           numColumns={2}
           keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={<ListHeader />}
-          contentContainerStyle={styles.grid}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
+          ListHeaderComponent={ListHeader}
+          contentContainerStyle={styles.content}
+          columnWrapperStyle={styles.cardRow}
           showsVerticalScrollIndicator={false}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {
@@ -52,91 +78,120 @@ export default function PokedexScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage ? (
-              <ActivityIndicator style={{ marginTop: 16 }} />
+              <ActivityIndicator style={styles.footerLoader} />
             ) : null
           }
-          renderItem={( {item} ) => <PokemonCard {...item} /> }
+          renderItem={({ item, index }) => (
+            <PokemonCard item={item} isLeft={index % 2 === 0} />
+          )}
         />
-      </SafeAreaView>
-    )
+      )}
+    </View>
   );
 }
 
-const ListHeader = () => (
-  <>
-    <View style={styles.headerRow}>
-      <View>
-        <Text style={styles.title}>Pokédex</Text>
-        <Text style={styles.subtitle}>
-          見つけたポケモンをコレクションしよう
-        </Text>
-      </View>
-      <View style={styles.ball}>
-        <View style={styles.ballInner} />
-      </View>
-    </View>
-
-    <View style={styles.searchBox}>
-      <MaterialIcons name="search" size={20} color="#8a8f98" />
-      <TextInput
-        editable={false}
-        placeholder="ポケモン名・図鑑番号で検索"
-        placeholderTextColor="#8a8f98"
-        style={styles.searchInput}
-      />
-      <MaterialIcons name="tune" size={20} color="#8a8f98" />
-    </View>
-
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.filterRow}
-    >
-      {FILTER_TYPES.map((type, idx) => (
-        <View
-          key={type}
-          style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
-        >
-          <Text
-            style={[
-              styles.filterLabel,
-              idx === 0 && styles.filterLabelActive,
-            ]}
-          >
-            {type}
+function ListHeader() {
+  return (
+    <>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>Pokédex</Text>
+          <Text style={styles.subtitle}>
+            見つけたポケモンをコレクションしよう
           </Text>
         </View>
-      ))}
-    </ScrollView>
+        <View style={styles.ball}>
+          <View style={styles.ballInner} />
+        </View>
+      </View>
 
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>No.001 - No.151</Text>
-      <Text style={styles.sectionMeta}>151匹</Text>
-    </View>
-  </>
-);
+      <View style={styles.searchBox}>
+        <MaterialIcons name="search" size={20} color="#8a8f98" />
+        <TextInput
+          editable={false}
+          placeholder="ポケモン名・図鑑番号で検索"
+          placeholderTextColor="#8a8f98"
+          style={styles.searchInput}
+        />
+        <MaterialIcons name="tune" size={20} color="#8a8f98" />
+      </View>
 
-const PokemonCard = (item: PokemonListItem) => (
-  <Link
-    key={item.name}
-    href={{ pathname: "/explore", params: { name: item.name }}}
-    asChild
-  >
-    <View
-      style={[styles.card, { backgroundColor: DEFAULT_BG }]}
-    >
-      <Text style={styles.cardNo}>{item.displayNo}</Text>
-      <View
-        style={[styles.avatar, { backgroundColor: DEFAULT_ACCENT }]}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
       >
-        <Text style={styles.avatarText}>{item.name[0]}</Text>
+        {FILTER_TYPES.map((type, idx) => (
+          <View
+            key={type}
+            style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
+          >
+            <Text
+              style={[
+                styles.filterLabel,
+                idx === 0 && styles.filterLabelActive,
+              ]}
+            >
+              {type}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>No.001 - No.151</Text>
+        <Text style={styles.sectionMeta}>151匹</Text>
       </View>
-      <Text style={styles.cardName}>{item.name}</Text>
-      <View style={styles.typeRow}>
-      </View>
+    </>
+  );
+}
+
+type PokemonCardProps = {
+  item: PokemonListItem;
+  isLeft: boolean;
+};
+
+function PokemonCard({ item, isLeft }: PokemonCardProps) {
+  const theme = getCardTheme(item.id);
+  return (
+    <View
+      style={[
+        styles.cardCell,
+        isLeft ? styles.cardLeft : styles.cardRight,
+        { backgroundColor: theme.bg },
+      ]}
+    >
+      <Link
+        href={{ pathname: '/explore', params: { name: item.name } }}
+        asChild
+      >
+        <View style={styles.card}>
+          <Text style={styles.cardNo}>{item.displayNo}</Text>
+          <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
+            <Text style={styles.avatarText}>
+              {item.name[0]?.toUpperCase() ?? '?'}
+            </Text>
+          </View>
+          <Text style={styles.cardName} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <View style={styles.typeRow}>
+            {theme.typeLabels.map((typeLabel) => (
+              <View
+                key={`${item.id}-${typeLabel}`}
+                style={[styles.typePill, { borderColor: theme.accent }]}
+              >
+                <Text style={[styles.typeText, { color: theme.accent }]}>
+                  {typeLabel}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </Link>
     </View>
-  </Link>
-);
+  );
+}
 
 const styles = StyleSheet.create({
   page: {
@@ -167,7 +222,16 @@ const styles = StyleSheet.create({
     paddingTop: 74,
     paddingHorizontal: 18,
     paddingBottom: 110,
-    gap: 14,
+  },
+  centerLoader: {
+    marginTop: 120,
+  },
+  footerLoader: {
+    marginTop: 16,
+  },
+  errorText: {
+    marginTop: 120,
+    paddingHorizontal: 18,
   },
   headerRow: {
     flexDirection: 'row',
@@ -204,6 +268,7 @@ const styles = StyleSheet.create({
     borderColor: '#1f242d',
   },
   searchBox: {
+    marginTop: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -220,6 +285,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   filterRow: {
+    marginTop: 14,
     gap: 8,
     paddingRight: 12,
   },
@@ -244,6 +310,8 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   sectionHeader: {
+    marginTop: 14,
+    marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -258,59 +326,74 @@ const styles = StyleSheet.create({
     color: '#6f7580',
     fontWeight: '700',
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  cardRow: {
     justifyContent: 'space-between',
-    rowGap: 12,
+    marginBottom: 12,
+  },
+  cardCell: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   card: {
-    width: '48%',
+    width: '100%',
     borderRadius: 16,
-    padding: 12,
-    minHeight: 148,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
+    minHeight: 186,
     borderWidth: 1,
     borderColor: '#ffffff',
+    alignItems: 'center',
+  },
+  cardLeft: {
+    marginRight: 6,
+  },
+  cardRight: {
+    marginLeft: 6,
   },
   cardNo: {
+    alignSelf: 'flex-end',
     fontSize: 11,
-    color: '#70767f',
+    color: '#88909b',
     textAlign: 'right',
-    fontWeight: '700',
+    fontWeight: '800',
   },
   avatar: {
-    marginTop: 4,
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    marginTop: 10,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 50,
     fontWeight: '900',
+    lineHeight: 54,
   },
   cardName: {
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
     fontSize: 15,
     fontWeight: '800',
     color: '#1f242d',
+    lineHeight: 22,
   },
   typeRow: {
     marginTop: 9,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     flexWrap: 'wrap',
   },
   typePill: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
     backgroundColor: '#ffffffcc',
   },
   typeText: {
