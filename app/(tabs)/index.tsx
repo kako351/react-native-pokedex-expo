@@ -2,6 +2,7 @@ import { PokemonListItem, usePokemonList } from "@/src/features/pokedex/usePokem
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Link } from "expo-router";
 import { ActivityIndicator, ScrollView, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // いったん固定色
 const DEFAULT_ACCENT = "#4c82d9";
@@ -34,27 +35,29 @@ export default function PokedexScreen() {
     ) : isError ? (
       <Text>エラーが発生しました: error</Text>
     ) : (
-      <FlatList
-        data={items}
-        numColumns={2}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={<ListHeader />}
-        contentContainerStyle={styles.grid}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        showsVerticalScrollIndicator={false}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
+      <SafeAreaView>
+        <FlatList
+          data={items}
+          numColumns={2}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={<ListHeader />}
+          contentContainerStyle={styles.grid}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator style={{ marginTop: 16 }} />
+            ) : null
           }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <ActivityIndicator style={{ marginTop: 16 }} />
-          ) : null
-        }
-        renderItem={( {item} ) => <PokemonCard {...item} /> }
-      />
+          renderItem={( {item} ) => <PokemonCard {...item} /> }
+        />
+      </SafeAreaView>
     )
   );
 }
