@@ -1,5 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Image } from "expo-image";
+import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import {
   ActivityIndicator,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   pokemonImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
 });
