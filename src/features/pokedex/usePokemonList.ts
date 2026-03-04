@@ -5,11 +5,15 @@ export type PokemonListItem = {
   id: number;
   name: string;
   displayNo: string;
+  imageUrl: string;
 };
 
 const PER_PARGE: number = 30;
 
 const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
+
+const artworkUrl = (id: number) =>
+  `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 
 const extractIdFromUrl = (url: string): number => {
   // 例: https://pokeapi.co/api/v2/pokemon/25/  -> 25
@@ -29,6 +33,7 @@ export function usePokemonList(perPage = PER_PARGE) {
         id,
         name: p.name,
         displayNo: padNo(id),
+        imageUrl: artworkUrl(id),
       };
     });
   }, [q.data]);

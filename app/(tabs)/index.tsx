@@ -1,4 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from "expo-image";
 import { Link } from 'expo-router';
 import {
   ActivityIndicator,
@@ -167,10 +168,13 @@ function PokemonCard({ item, isLeft }: PokemonCardProps) {
       >
         <View style={styles.card}>
           <Text style={styles.cardNo}>{item.displayNo}</Text>
-          <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
-            <Text style={styles.avatarText}>
-              {item.name[0]?.toUpperCase() ?? '?'}
-            </Text>
+          <View style={styles.avatar}>
+            <Image
+              source={{ uri: item.imageUrl }}
+              contentFit="contain"
+              transition={150}
+              style={styles.pokemonImage}
+            />
           </View>
           <Text style={styles.cardName} numberOfLines={1}>
             {item.name}
@@ -363,16 +367,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: 84,
     height: 84,
-    borderRadius: 42,
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 50,
-    fontWeight: '900',
-    lineHeight: 54,
   },
   cardName: {
     marginTop: 10,
@@ -399,5 +393,9 @@ const styles = StyleSheet.create({
   typeText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  pokemonImage: {
+    width: "100%",
+    height: "100%",
   },
 });
