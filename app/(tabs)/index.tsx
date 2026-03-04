@@ -1,65 +1,11 @@
+import { PokemonListItem, usePokemonList } from "@/src/features/pokedex/usePokemonList";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Link } from "expo-router";
+import { ActivityIndicator, ScrollView, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
-type PokemonCard = {
-  id: number;
-  name: string;
-  displayNo: string;
-  types: string[];
-  accent: string;
-  bg: string;
-};
-
-const MOCK_POKEMON: PokemonCard[] = [
-  {
-    id: 1,
-    name: 'フシギダネ',
-    displayNo: '#0001',
-    types: ['くさ', 'どく'],
-    accent: '#4f9c7d',
-    bg: '#ddf6ea',
-  },
-  {
-    id: 4,
-    name: 'ヒトカゲ',
-    displayNo: '#0004',
-    types: ['ほのお'],
-    accent: '#db6d3f',
-    bg: '#ffe9de',
-  },
-  {
-    id: 7,
-    name: 'ゼニガメ',
-    displayNo: '#0007',
-    types: ['みず'],
-    accent: '#4c82d9',
-    bg: '#dfecff',
-  },
-  {
-    id: 25,
-    name: 'ピカチュウ',
-    displayNo: '#0025',
-    types: ['でんき'],
-    accent: '#d7a62e',
-    bg: '#fff4cf',
-  },
-  {
-    id: 39,
-    name: 'プリン',
-    displayNo: '#0039',
-    types: ['ノーマル', 'フェアリー'],
-    accent: '#ba6d9a',
-    bg: '#ffe2f2',
-  },
-  {
-    id: 133,
-    name: 'イーブイ',
-    displayNo: '#0133',
-    types: ['ノーマル'],
-    accent: '#9a7a52',
-    bg: '#f7ecde',
-  },
-];
+// いったん固定色
+const DEFAULT_ACCENT = "#4c82d9";
+const DEFAULT_BG = "#dfecff";
 
 const FILTER_TYPES = [
   'すべて',
@@ -72,97 +18,122 @@ const FILTER_TYPES = [
 ];
 
 export default function PokedexScreen() {
+  const {
+    items,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePokemonList();
+
   return (
-    <View style={styles.page}>
-      <View style={styles.bgOrbTop} />
-      <View style={styles.bgOrbBottom} />
-
-      <ScrollView
-        contentContainerStyle={styles.content}
+    isLoading ? (
+      <ActivityIndicator />
+    ) : isError ? (
+      <Text>エラーが発生しました: error</Text>
+    ) : (
+      <FlatList
+        data={items}
+        numColumns={2}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={<ListHeader />}
+        contentContainerStyle={styles.grid}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>Pokédex</Text>
-            <Text style={styles.subtitle}>
-              見つけたポケモンをコレクションしよう
-            </Text>
-          </View>
-          <View style={styles.ball}>
-            <View style={styles.ballInner} />
-          </View>
-        </View>
-
-        <View style={styles.searchBox}>
-          <MaterialIcons name="search" size={20} color="#8a8f98" />
-          <TextInput
-            editable={false}
-            placeholder="ポケモン名・図鑑番号で検索"
-            placeholderTextColor="#8a8f98"
-            style={styles.searchInput}
-          />
-          <MaterialIcons name="tune" size={20} color="#8a8f98" />
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
-        >
-          {FILTER_TYPES.map((type, idx) => (
-            <View
-              key={type}
-              style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
-            >
-              <Text
-                style={[
-                  styles.filterLabel,
-                  idx === 0 && styles.filterLabelActive,
-                ]}
-              >
-                {type}
-              </Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>No.001 - No.151</Text>
-          <Text style={styles.sectionMeta}>151匹</Text>
-        </View>
-
-        <View style={styles.grid}>
-          {MOCK_POKEMON.map((pokemon) => (
-            <View
-              key={pokemon.id}
-              style={[styles.card, { backgroundColor: pokemon.bg }]}
-            >
-              <Text style={styles.cardNo}>{pokemon.displayNo}</Text>
-              <View
-                style={[styles.avatar, { backgroundColor: pokemon.accent }]}
-              >
-                <Text style={styles.avatarText}>{pokemon.name[0]}</Text>
-              </View>
-              <Text style={styles.cardName}>{pokemon.name}</Text>
-              <View style={styles.typeRow}>
-                {pokemon.types.map((type) => (
-                  <View
-                    key={`${pokemon.id}-${type}`}
-                    style={[styles.typePill, { borderColor: pokemon.accent }]}
-                  >
-                    <Text style={[styles.typeText, { color: pokemon.accent }]}>
-                      {type}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator style={{ marginTop: 16 }} />
+          ) : null
+        }
+        renderItem={( {item} ) => <PokemonCard {...item} /> }
+      />
+    )
   );
 }
+
+const ListHeader = () => (
+  <>
+    <View style={styles.headerRow}>
+      <View>
+        <Text style={styles.title}>Pokédex</Text>
+        <Text style={styles.subtitle}>
+          見つけたポケモンをコレクションしよう
+        </Text>
+      </View>
+      <View style={styles.ball}>
+        <View style={styles.ballInner} />
+      </View>
+    </View>
+
+    <View style={styles.searchBox}>
+      <MaterialIcons name="search" size={20} color="#8a8f98" />
+      <TextInput
+        editable={false}
+        placeholder="ポケモン名・図鑑番号で検索"
+        placeholderTextColor="#8a8f98"
+        style={styles.searchInput}
+      />
+      <MaterialIcons name="tune" size={20} color="#8a8f98" />
+    </View>
+
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filterRow}
+    >
+      {FILTER_TYPES.map((type, idx) => (
+        <View
+          key={type}
+          style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
+        >
+          <Text
+            style={[
+              styles.filterLabel,
+              idx === 0 && styles.filterLabelActive,
+            ]}
+          >
+            {type}
+          </Text>
+        </View>
+      ))}
+    </ScrollView>
+
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>No.001 - No.151</Text>
+      <Text style={styles.sectionMeta}>151匹</Text>
+    </View>
+  </>
+);
+
+const PokemonCard = (item: PokemonListItem) => (
+  <Link
+    key={item.name}
+    href={{ pathname: "/explore", params: { name: item.name }}}
+    asChild
+  >
+    <View
+      style={[styles.card, { backgroundColor: DEFAULT_BG }]}
+    >
+      <Text style={styles.cardNo}>{item.displayNo}</Text>
+      <View
+        style={[styles.avatar, { backgroundColor: DEFAULT_ACCENT }]}
+      >
+        <Text style={styles.avatarText}>{item.name[0]}</Text>
+      </View>
+      <Text style={styles.cardName}>{item.name}</Text>
+      <View style={styles.typeRow}>
+      </View>
+    </View>
+  </Link>
+);
 
 const styles = StyleSheet.create({
   page: {
