@@ -3,26 +3,27 @@ import type { PokemonSpecies } from './schema/pokemonspecies';
 const normalizeFlavor = (s: string) =>
   s.replace(/\n|\f/g, ' ').replace(/\s+/g, ' ').trim();
 
+type Language = { language: { name: string } };
+
+const pickJaEntry = <T extends Language>(entries: T[]): T | null =>
+  entries.find((e) => e.language.name === 'ja') ??
+  entries.find((e) => e.language.name === 'ja-Hrkt') ??
+  null;
+
+const pickJaLast = <T extends Language>(entries: T[]): T | null =>
+  entries.filter((e) => e.language.name === 'ja').at(-1) ??
+  entries.filter((e) => e.language.name === 'ja-Hrkt').at(-1) ??
+  null;
+
 export function pickJapaneseName(species: PokemonSpecies): string {
-  return (
-    species.names.find((n) => n.language.name === 'ja')?.name ??
-    species.names.find((n) => n.language.name === 'ja-Hrkt')?.name ??
-    species.name
-  );
+  return pickJaEntry(species.names)?.name ?? species.name;
 }
 
 export function pickJapaneseGenus(species: PokemonSpecies): string | null {
-  return (
-    species.genera.find((g) => g.language.name === 'ja')?.genus ??
-    species.genera.find((g) => g.language.name === 'ja-Hrkt')?.genus ??
-    null
-  );
+  return pickJaEntry(species.genera)?.genus ?? null;
 }
 
 export function pickJapaneseFlavorText(species: PokemonSpecies): string | null {
-  const ja = species.flavor_text_entries.filter(
-    (e) => e.language.name === 'ja' || e.language.name === 'ja-Hrkt',
-  );
-  if (ja.length === 0) return null;
-  return normalizeFlavor(ja[ja.length - 1].flavor_text);
+  const picked = pickJaLast(species.flavor_text_entries);
+  return picked ? normalizeFlavor(picked.flavor_text) : null;
 }
