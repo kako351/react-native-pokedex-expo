@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
+import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -59,6 +60,111 @@ const TYPE_JA: Record<string, string> = {
   fighting: 'かくとう',
   ghost: 'ゴースト',
 };
+
+type TypeItem = {
+  key: string;
+  label: string;
+};
+
+type BaseStatItem = {
+  key: string;
+  label: string;
+  value: number;
+  color: string;
+};
+
+type InfoCardProps = {
+  title: string;
+  right?: ReactNode;
+  children: ReactNode;
+};
+
+function InfoCard({ title, right, children }: InfoCardProps) {
+  return (
+    <View style={styles.infoCard}>
+      <View style={styles.infoHeader}>
+        <Text style={styles.blockTitle}>{title}</Text>
+        {right ?? null}
+      </View>
+      {children}
+    </View>
+  );
+}
+
+type InfoGridItemProps = {
+  label: string;
+  value: string;
+};
+
+function InfoGridItem({ label, value }: InfoGridItemProps) {
+  return (
+    <View style={styles.infoItem}>
+      <Text style={styles.infoKey}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+}
+
+type TypeChipsProps = {
+  items: TypeItem[];
+};
+
+function TypeChips({ items }: TypeChipsProps) {
+  return (
+    <View style={styles.typeRow}>
+      {items.map((item) => (
+        <View
+          key={item.key}
+          style={[styles.typeChip, { backgroundColor: '#f5f7fb' }]}
+        >
+          <Text style={[styles.typeText, { color: '#5f6672' }]}>
+            {item.label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+type StatRowProps = {
+  stat: BaseStatItem;
+};
+
+function StatRow({ stat }: StatRowProps) {
+  return (
+    <View style={styles.statRow}>
+      <Text style={styles.statLabel}>{stat.label}</Text>
+      <Text style={styles.statValue}>{stat.value}</Text>
+      <View style={styles.barTrack}>
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: `${Math.min(stat.value / 1.4, 100)}%`,
+              backgroundColor: stat.color,
+            },
+          ]}
+        />
+      </View>
+    </View>
+  );
+}
+
+type MoveChipsProps = {
+  moves: string[];
+};
+
+function MoveChips({ moves }: MoveChipsProps) {
+  return (
+    <View style={styles.moveWrap}>
+      {moves.map((move) => (
+        <View key={move} style={styles.moveChip}>
+          <Text style={styles.moveLabel}>{move}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function PokemonDetailMockScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
@@ -172,18 +278,7 @@ export default function PokemonDetailMockScreen() {
               <Text style={styles.no}>{displayNo}</Text>
               <Text style={styles.name}>{displayName}</Text>
 
-              <View style={styles.typeRow}>
-                {types.map((t) => (
-                  <View
-                    key={t.key}
-                    style={[styles.typeChip, { backgroundColor: '#f5f7fb' }]}
-                  >
-                    <Text style={[styles.typeText, { color: '#5f6672' }]}>
-                      {t.label}
-                    </Text>
-                  </View>
-                ))}
-              </View>
+              <TypeChips items={types} />
             </View>
           </View>
 
@@ -200,60 +295,31 @@ export default function PokemonDetailMockScreen() {
           </View>
         </View>
 
-        <View style={styles.infoCard}>
-          <View style={styles.infoHeader}>
-            <Text style={styles.blockTitle}>プロフィール</Text>
+        <InfoCard
+          title="プロフィール"
+          right={
             <MaterialIcons name="favorite-border" size={20} color="#7c838f" />
-          </View>
-
+          }
+        >
           <Text style={styles.description}>{description}</Text>
-
           <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoKey}>たかさ</Text>
-              <Text style={styles.infoValue}>{heightText}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoKey}>おもさ</Text>
-              <Text style={styles.infoValue}>{weightText}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoKey}>とくせい</Text>
-              <Text style={styles.infoValue}>{abilityText}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoKey}>けいけんち</Text>
-              <Text style={styles.infoValue}>{expText}</Text>
-            </View>
+            <InfoGridItem label="たかさ" value={heightText} />
+            <InfoGridItem label="おもさ" value={weightText} />
+            <InfoGridItem label="とくせい" value={abilityText} />
+            <InfoGridItem label="けいけんち" value={expText} />
           </View>
-        </View>
+        </InfoCard>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.blockTitle}>種族値</Text>
+        <InfoCard title="種族値">
           <View style={styles.statsWrap}>
             {baseStats.map((stat) => (
-              <View key={stat.key} style={styles.statRow}>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <View style={styles.barTrack}>
-                  <View
-                    style={[
-                      styles.barFill,
-                      {
-                        width: `${Math.min(stat.value / 1.4, 100)}%`,
-                        backgroundColor: stat.color,
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
+              <StatRow key={stat.key} stat={stat} />
             ))}
           </View>
-        </View>
+        </InfoCard>
 
         {/* 進化ラインは別API（evolution-chain）が必要なので、UI維持のため今は固定表示のまま */}
-        <View style={styles.infoCard}>
-          <Text style={styles.blockTitle}>進化ライン</Text>
+        <InfoCard title="進化ライン">
           <View style={styles.evolutionRow}>
             <Text style={styles.evoName}>ヒトカゲ</Text>
             <MaterialIcons name="arrow-forward" size={18} color="#8c92a0" />
@@ -261,18 +327,11 @@ export default function PokemonDetailMockScreen() {
             <MaterialIcons name="arrow-forward" size={18} color="#8c92a0" />
             <Text style={[styles.evoName, styles.evoCurrent]}>リザードン</Text>
           </View>
-        </View>
+        </InfoCard>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.blockTitle}>覚えるわざ</Text>
-          <View style={styles.moveWrap}>
-            {moveList.map((move) => (
-              <View key={move} style={styles.moveChip}>
-                <Text style={styles.moveLabel}>{move}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        <InfoCard title="覚えるわざ">
+          <MoveChips moves={moveList} />
+        </InfoCard>
       </ScrollView>
     </View>
   );
