@@ -1,19 +1,26 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import type { ReactNode } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { usePokemonDetail, usePokemonSpecies } from '@/src/api/pokeapi/queries';
 import {
   pickJapaneseFlavorText,
   pickJapaneseName,
 } from '@/src/api/pokeapi/pokemonSpeciesMapper';
+import { usePokemonDetail, usePokemonSpecies } from '@/src/api/pokeapi/queries';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import type { ReactNode } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedRef,
+  useAnimatedStyle,
+  useScrollOffset,
+} from 'react-native-reanimated';
 
 const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
 const toMeters = (dm: number) => `${(dm / 10).toFixed(1)} m`;
@@ -166,12 +173,81 @@ function MoveChips({ moves }: MoveChipsProps) {
   );
 }
 
+const EXPANDED_HEADER_HEIGHT = 480;
+const COLLAPSED_HEADER_HEIGHT = 92;
+const COLLAPSE_RANGE = EXPANDED_HEADER_HEIGHT - COLLAPSED_HEADER_HEIGHT;
+
 export default function PokemonDetailMockScreen() {
+  const router = useRouter();
   const { name } = useLocalSearchParams<{ name: string }>();
   const pokemonName = name ?? '';
 
   const detailQ = usePokemonDetail(pokemonName);
   const speciesQ = usePokemonSpecies(pokemonName);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollOffset(scrollRef);
+
+  const heroAnimatedStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      scrollOffset.value,
+      [0, COLLAPSE_RANGE],
+      [EXPANDED_HEADER_HEIGHT, COLLAPSED_HEADER_HEIGHT],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const heroBodyAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollOffset.value,
+      [0, COLLAPSE_RANGE * 0.7],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollOffset.value,
+          [0, COLLAPSE_RANGE],
+          [0, -28],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const toolbarAnimatedStyle = useAnimatedStyle(() => ({
+    backgroundColor: `rgba(255, 253, 247, ${interpolate(
+      scrollOffset.value,
+      [0, COLLAPSE_RANGE * 0.85],
+      [0, 1],
+      Extrapolation.CLAMP,
+    )})`,
+    borderBottomWidth: interpolate(
+      scrollOffset.value,
+      [0, COLLAPSE_RANGE * 0.85],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const toolbarTitleAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollOffset.value,
+      [COLLAPSE_RANGE * 0.55, COLLAPSE_RANGE * 0.9],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollOffset.value,
+          [COLLAPSE_RANGE * 0.55, COLLAPSE_RANGE * 0.9],
+          [8, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   if (detailQ.isLoading || speciesQ.isLoading) {
     return (
@@ -268,22 +344,17 @@ export default function PokemonDetailMockScreen() {
       <View style={styles.bgA} />
       <View style={styles.bgB} />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View>
+      <Animated.View style={[styles.heroContainer, heroAnimatedStyle]}>
+        <Animated.View style={[styles.heroBody, heroBodyAnimatedStyle]}>
           <View style={styles.heroHeader}>
             <View>
               <Text style={styles.no}>{displayNo}</Text>
               <Text style={styles.name}>{displayName}</Text>
-
               <TypeChips items={types} />
             </View>
           </View>
 
           <View style={styles.heroImageStage}>
-            <View style={styles.heroGlow} />
             {heroImageUri ? (
               <Image
                 source={{ uri: heroImageUri }}
@@ -293,8 +364,29 @@ export default function PokemonDetailMockScreen() {
               />
             ) : null}
           </View>
-        </View>
+        </Animated.View>
+      </Animated.View>
 
+      <Animated.View style={[styles.toolbar, toolbarAnimatedStyle]}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={10}
+          style={styles.toolbarBackButton}
+        >
+          <MaterialIcons name="arrow-back" size={22} color="#2f3440" />
+        </Pressable>
+        <Animated.Text style={[styles.toolbarTitle, toolbarTitleAnimatedStyle]}>
+          {displayName}
+        </Animated.Text>
+        <View style={styles.toolbarRightSpace} />
+      </Animated.View>
+
+      <Animated.ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+      >
         <InfoCard
           title="プロフィール"
           right={
@@ -332,7 +424,7 @@ export default function PokemonDetailMockScreen() {
         <InfoCard title="覚えるわざ">
           <MoveChips moves={moveList} />
         </InfoCard>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -363,10 +455,22 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   content: {
-    paddingTop: 72,
+    paddingTop: EXPANDED_HEADER_HEIGHT + 0,
     paddingHorizontal: 18,
     paddingBottom: 110,
     gap: 12,
+  },
+  heroContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 5,
+    overflow: 'hidden',
+  },
+  heroBody: {
+    paddingTop: 72,
+    paddingHorizontal: 18,
   },
   hero: {
     borderRadius: 22,
@@ -379,6 +483,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   heroHeader: {
+    marginTop: 32,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
@@ -428,23 +533,43 @@ const styles = StyleSheet.create({
     marginTop: 8,
     height: 220,
     borderRadius: 18,
-    backgroundColor: '#fff2ea',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  heroGlow: {
-    position: 'absolute',
-    width: 230,
-    height: 230,
-    borderRadius: 115,
-    backgroundColor: '#ffc8ad',
-    top: -10,
-    opacity: 0.65,
-  },
   heroImage: {
-    width: '92%',
-    height: '92%',
+    width: '100%',
+    height: '100%',
+  },
+  toolbar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    height: COLLAPSED_HEADER_HEIGHT,
+    paddingTop: 44,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomColor: '#efe7d8',
+  },
+  toolbarBackButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toolbarTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#232732',
+  },
+  toolbarRightSpace: {
+    width: 36,
+    height: 36,
   },
   infoCard: {
     borderRadius: 18,
