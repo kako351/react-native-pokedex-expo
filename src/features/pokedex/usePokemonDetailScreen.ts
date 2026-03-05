@@ -74,11 +74,16 @@ const STAT_ORDER = [
 
 const flattenEvolutionChainNames = (chain: EvolutionChain): string[] => {
   const result: string[] = [];
-  let current = chain.chain;
+  const stack = [chain.chain];
 
-  while (current) {
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
     result.push(current.species.name);
-    current = current.evolves_to?.[0];
+
+    for (let i = current.evolves_to.length - 1; i >= 0; i -= 1) {
+      stack.push(current.evolves_to[i]);
+    }
   }
 
   return result;
