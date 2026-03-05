@@ -1,12 +1,11 @@
 import {
-  pickJapaneseFlavorText,
-  pickJapaneseName,
-} from '@/src/api/pokeapi/pokemonSpeciesMapper';
-import { usePokemonDetail, usePokemonSpecies } from '@/src/api/pokeapi/queries';
+  type PokemonDetailScreenData,
+  usePokemonDetailScreen,
+} from '@/src/features/pokedex/usePokemonDetailScreen';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -22,63 +21,8 @@ import Animated, {
   useScrollOffset,
 } from 'react-native-reanimated';
 
-const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
-const toMeters = (dm: number) => `${(dm / 10).toFixed(1)} m`;
-const toKg = (hg: number) => `${(hg / 10).toFixed(1)} kg`;
-
-// 種族値の表示順と日本語ラベル
-const STAT_LABEL: Record<string, string> = {
-  hp: 'HP',
-  attack: 'こうげき',
-  defense: 'ぼうぎょ',
-  'special-attack': 'とくこう',
-  'special-defense': 'とくぼう',
-  speed: 'すばやさ',
-};
-
-// 色は今のUIのまま固定（レイアウト維持）
-const STAT_COLOR: Record<string, string> = {
-  hp: '#e46c6c',
-  attack: '#e29345',
-  defense: '#d1a642',
-  'special-attack': '#4d8ddb',
-  'special-defense': '#4cb27b',
-  speed: '#8f73d9',
-};
-
-// タイプ表示はまず英語→日本語の簡易変換（必要最低限）
-const TYPE_JA: Record<string, string> = {
-  grass: 'くさ',
-  poison: 'どく',
-  fire: 'ほのお',
-  water: 'みず',
-  electric: 'でんき',
-  normal: 'ノーマル',
-  fairy: 'フェアリー',
-  flying: 'ひこう',
-  bug: 'むし',
-  ground: 'じめん',
-  rock: 'いわ',
-  psychic: 'エスパー',
-  ice: 'こおり',
-  dragon: 'ドラゴン',
-  dark: 'あく',
-  steel: 'はがね',
-  fighting: 'かくとう',
-  ghost: 'ゴースト',
-};
-
-type TypeItem = {
-  key: string;
-  label: string;
-};
-
-type BaseStatItem = {
-  key: string;
-  label: string;
-  value: number;
-  color: string;
-};
+type TypeItem = PokemonDetailScreenData['types'][number];
+type BaseStatItem = PokemonDetailScreenData['baseStats'][number];
 
 type InfoCardProps = {
   title: string;
@@ -176,14 +120,15 @@ function MoveChips({ moves }: MoveChipsProps) {
 const EXPANDED_HEADER_HEIGHT = 480;
 const COLLAPSED_HEADER_HEIGHT = 92;
 const COLLAPSE_RANGE = EXPANDED_HEADER_HEIGHT - COLLAPSED_HEADER_HEIGHT;
+const INITIAL_MOVE_COUNT = 4;
+const MOVE_PAGE_SIZE = 8;
 
 export default function PokemonDetailMockScreen() {
   const router = useRouter();
   const { name } = useLocalSearchParams<{ name: string }>();
   const pokemonName = name ?? '';
-
-  const detailQ = usePokemonDetail(pokemonName);
-  const speciesQ = usePokemonSpecies(pokemonName);
+  const [visibleMoveCount, setVisibleMoveCount] = useState(INITIAL_MOVE_COUNT);
+  const screenQ = usePokemonDetailScreen(pokemonName, visibleMoveCount);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
 
@@ -249,7 +194,11 @@ export default function PokemonDetailMockScreen() {
     ],
   }));
 
-  if (detailQ.isLoading || speciesQ.isLoading) {
+  useEffect(() => {
+    setVisibleMoveCount(INITIAL_MOVE_COUNT);
+  }, [pokemonName]);
+
+  if (screenQ.isLoading) {
     return (
       <View style={[styles.page, { justifyContent: 'center' }]}>
         <ActivityIndicator />
@@ -257,87 +206,38 @@ export default function PokemonDetailMockScreen() {
     );
   }
 
-  if (detailQ.isError) {
+  if (screenQ.isError) {
     return (
       <View style={[styles.page, { padding: 18 }]}>
-        <Text>detail error: {(detailQ.error as Error).message}</Text>
+        <Text>error: {screenQ.error?.message ?? 'unknown'}</Text>
       </View>
     );
   }
 
-  if (speciesQ.isError) {
+  if (!screenQ.data) {
     return (
       <View style={[styles.page, { padding: 18 }]}>
-        <Text>species error: {(speciesQ.error as Error).message}</Text>
+        <Text>データが見つかりませんでした。</Text>
       </View>
     );
   }
+  const {
+    displayNo,
+    displayName,
+    heroImageUri,
+    types,
+    description,
+    heightText,
+    weightText,
+    abilityText,
+    expText,
+    baseStats,
+    moveList,
+    moveTotalCount,
+    evolutionNames,
+  } = screenQ.data;
 
-  const p = detailQ.data!;
-  const s = speciesQ.data!;
-
-  // --- 表示用に整形（UIを崩さないためにここで全部作る） ---
-  const displayNo = padNo(p.id);
-  const displayName = pickJapaneseName(s); // 日本語名（speciesから）
-  const description =
-    pickJapaneseFlavorText(s) ?? '図鑑説明が見つかりませんでした';
-
-  const heroImageUri =
-    p.sprites.other?.['official-artwork']?.front_default ??
-    p.sprites.front_default ??
-    '';
-
-  const types = p.types
-    .slice()
-    .sort((a, b) => a.slot - b.slot)
-    .map((t) => ({
-      key: t.type.name,
-      label: TYPE_JA[t.type.name] ?? t.type.name,
-    }));
-
-  const baseStats = p.stats
-    .map((st) => ({
-      key: st.stat.name,
-      label: STAT_LABEL[st.stat.name] ?? st.stat.name,
-      value: st.base_stat,
-      color: STAT_COLOR[st.stat.name] ?? '#4d8ddb',
-    }))
-    // 表示順を固定（UIの並びを守る）
-    .sort(
-      (a, b) =>
-        [
-          'hp',
-          'attack',
-          'defense',
-          'special-attack',
-          'special-defense',
-          'speed',
-        ].indexOf(a.key) -
-        [
-          'hp',
-          'attack',
-          'defense',
-          'special-attack',
-          'special-defense',
-          'speed',
-        ].indexOf(b.key),
-    );
-
-  const heightText = toMeters(p.height);
-  const weightText = toKg(p.weight);
-
-  const abilityText =
-    p.abilities
-      .slice()
-      .sort((a, b) => a.slot - b.slot)
-      .map((a) => a.ability.name) // ここは英語。日本語化は追加APIが必要
-      .join(' / ') || '-';
-
-  const expText = String(p.base_experience ?? '-');
-
-  const moveList = p.moves.slice(0, 4).map((m) => m.move.name); // 英語。日本語化は追加APIが必要
-
-  // ------------------------------------------------------------
+  const canShowMoreMoves = moveList.length < moveTotalCount;
 
   return (
     <View style={styles.page}>
@@ -410,19 +310,48 @@ export default function PokemonDetailMockScreen() {
           </View>
         </InfoCard>
 
-        {/* 進化ラインは別API（evolution-chain）が必要なので、UI維持のため今は固定表示のまま */}
         <InfoCard title="進化ライン">
           <View style={styles.evolutionRow}>
-            <Text style={styles.evoName}>ヒトカゲ</Text>
-            <MaterialIcons name="arrow-forward" size={18} color="#8c92a0" />
-            <Text style={styles.evoName}>リザード</Text>
-            <MaterialIcons name="arrow-forward" size={18} color="#8c92a0" />
-            <Text style={[styles.evoName, styles.evoCurrent]}>リザードン</Text>
+            {evolutionNames.length > 0 ? (
+              evolutionNames.map((evo, idx) => (
+                <View key={evo} style={styles.evolutionItem}>
+                  {idx > 0 ? (
+                    <MaterialIcons
+                      name="arrow-forward"
+                      size={18}
+                      color="#8c92a0"
+                    />
+                  ) : null}
+                  <Text
+                    style={[
+                      styles.evoName,
+                      evo === displayName ? styles.evoCurrent : null,
+                    ]}
+                  >
+                    {evo}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.description}>
+                進化情報が見つかりませんでした。
+              </Text>
+            )}
           </View>
         </InfoCard>
 
         <InfoCard title="覚えるわざ">
           <MoveChips moves={moveList} />
+          {canShowMoreMoves ? (
+            <Pressable
+              onPress={() =>
+                setVisibleMoveCount((prev) => prev + MOVE_PAGE_SIZE)
+              }
+              style={styles.moreButton}
+            >
+              <Text style={styles.moreButtonLabel}>もっと見る</Text>
+            </Pressable>
+          ) : null}
         </InfoCard>
       </Animated.ScrollView>
     </View>
@@ -653,7 +582,13 @@ const styles = StyleSheet.create({
   evolutionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  evolutionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   evoName: {
@@ -685,6 +620,21 @@ const styles = StyleSheet.create({
   moveLabel: {
     fontSize: 12,
     fontWeight: '700',
+    color: '#5d6470',
+  },
+  moreButton: {
+    alignSelf: 'center',
+    marginTop: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#d9d1c6',
+    backgroundColor: '#fffaf2',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  moreButtonLabel: {
+    fontSize: 12,
+    fontWeight: '800',
     color: '#5d6470',
   },
 });
