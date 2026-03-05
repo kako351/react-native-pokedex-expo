@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
+  fetchEvolutionChain,
   fetchPokemonDetail,
   fetchPokemonList,
   fetchPokemonSpecies,
@@ -35,6 +36,15 @@ export const pokemonKeys = {
    * @returns React Query 用のクエリキー
    */
   species: (name: string) => [...pokemonKeys.all, 'species', name] as const,
+
+  /**
+   * 進化チェーン取得用のクエリキーを生成します。
+   *
+   * @param url 進化チェーンAPIのURL
+   * @returns React Query 用のクエリキー
+   */
+  evolutionChain: (url: string) =>
+    [...pokemonKeys.all, 'evolution-chain', url] as const,
 };
 
 /**
@@ -81,6 +91,21 @@ export function usePokemonSpecies(name: string) {
     queryKey: pokemonKeys.species(name),
     queryFn: () => fetchPokemonSpecies(name),
     enabled: !!name,
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+}
+
+/**
+ * 指定した進化チェーンURLから進化情報を取得するクエリフックです。
+ *
+ * @param url 進化チェーンAPIのURL
+ * @returns 進化チェーン情報のクエリ結果
+ */
+export function useEvolutionChain(url?: string) {
+  return useQuery({
+    queryKey: url ? pokemonKeys.evolutionChain(url) : pokemonKeys.all,
+    queryFn: () => fetchEvolutionChain(url!),
+    enabled: !!url,
     staleTime: 24 * 60 * 60 * 1000,
   });
 }

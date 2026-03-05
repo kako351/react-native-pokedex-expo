@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -166,32 +167,41 @@ function PokemonCard({ item, isLeft }: PokemonCardProps) {
         href={{ pathname: '/explore', params: { name: item.name } }}
         asChild
       >
-        <View style={styles.card}>
-          <Text style={styles.cardNo}>{item.displayNo}</Text>
-          <View style={styles.avatar}>
-            <Image
-              source={{ uri: item.imageUrl }}
-              contentFit="contain"
-              transition={150}
-              style={styles.pokemonImage}
-            />
+        <Pressable
+          android_ripple={{
+            color: 'rgba(31, 36, 45, 0.16)',
+            foreground: true,
+          }}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+        >
+          <View style={styles.cardContent}>
+            <Text style={styles.cardNo}>{item.displayNo}</Text>
+            <View style={styles.avatar}>
+              <Image
+                source={{ uri: item.imageUrl }}
+                contentFit="contain"
+                contentPosition="center"
+                transition={150}
+                style={styles.pokemonImage}
+              />
+            </View>
+            <Text style={styles.cardName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <View style={styles.typeRow}>
+              {theme.typeLabels.map((typeLabel) => (
+                <View
+                  key={`${item.id}-${typeLabel}`}
+                  style={[styles.typePill, { borderColor: theme.accent }]}
+                >
+                  <Text style={[styles.typeText, { color: theme.accent }]}>
+                    {typeLabel}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
-          <Text style={styles.cardName} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <View style={styles.typeRow}>
-            {theme.typeLabels.map((typeLabel) => (
-              <View
-                key={`${item.id}-${typeLabel}`}
-                style={[styles.typePill, { borderColor: theme.accent }]}
-              >
-                <Text style={[styles.typeText, { color: theme.accent }]}>
-                  {typeLabel}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        </Pressable>
       </Link>
     </View>
   );
@@ -342,6 +352,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardContent: {
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 12,
@@ -349,6 +362,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ffffff',
     alignItems: 'center',
+  },
+  cardPressed: {
+    opacity: 0.92,
   },
   cardLeft: {
     marginRight: 6,
@@ -367,6 +383,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: 84,
     height: 84,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardName: {
     marginTop: 10,
@@ -395,7 +414,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   pokemonImage: {
-    width: '100%',
-    height: '100%',
+    width: '82%',
+    height: '82%',
+    alignSelf: 'center',
   },
 });
