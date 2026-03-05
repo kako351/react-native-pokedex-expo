@@ -1,26 +1,162 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { usePokemonDetail, usePokemonSpecies } from '@/src/api/pokeapi/queries';
+import {
+  pickJapaneseFlavorText,
+  pickJapaneseName,
+} from '@/src/api/pokeapi/pokemonSpeciesMapper';
 
-const BASE_STATS = [
-  { label: 'HP', value: 78, color: '#e46c6c' },
-  { label: 'こうげき', value: 84, color: '#e29345' },
-  { label: 'ぼうぎょ', value: 78, color: '#d1a642' },
-  { label: 'とくこう', value: 109, color: '#4d8ddb' },
-  { label: 'とくぼう', value: 85, color: '#4cb27b' },
-  { label: 'すばやさ', value: 100, color: '#8f73d9' },
-];
+const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
+const toMeters = (dm: number) => `${(dm / 10).toFixed(1)} m`;
+const toKg = (hg: number) => `${(hg / 10).toFixed(1)} kg`;
 
-const MOVE_LIST = [
-  'かえんほうしゃ',
-  'ドラゴンクロー',
-  'エアスラッシュ',
-  'はねやすめ',
-];
-const HERO_IMAGE_URI =
-  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png';
+// 種族値の表示順と日本語ラベル
+const STAT_LABEL: Record<string, string> = {
+  hp: 'HP',
+  attack: 'こうげき',
+  defense: 'ぼうぎょ',
+  'special-attack': 'とくこう',
+  'special-defense': 'とくぼう',
+  speed: 'すばやさ',
+};
+
+// 色は今のUIのまま固定（レイアウト維持）
+const STAT_COLOR: Record<string, string> = {
+  hp: '#e46c6c',
+  attack: '#e29345',
+  defense: '#d1a642',
+  'special-attack': '#4d8ddb',
+  'special-defense': '#4cb27b',
+  speed: '#8f73d9',
+};
+
+// タイプ表示はまず英語→日本語の簡易変換（必要最低限）
+const TYPE_JA: Record<string, string> = {
+  grass: 'くさ',
+  poison: 'どく',
+  fire: 'ほのお',
+  water: 'みず',
+  electric: 'でんき',
+  normal: 'ノーマル',
+  fairy: 'フェアリー',
+  flying: 'ひこう',
+  bug: 'むし',
+  ground: 'じめん',
+  rock: 'いわ',
+  psychic: 'エスパー',
+  ice: 'こおり',
+  dragon: 'ドラゴン',
+  dark: 'あく',
+  steel: 'はがね',
+  fighting: 'かくとう',
+  ghost: 'ゴースト',
+};
 
 export default function PokemonDetailMockScreen() {
+  const { name } = useLocalSearchParams<{ name: string }>();
+  const pokemonName = name ?? '';
+
+  const detailQ = usePokemonDetail(pokemonName);
+  const speciesQ = usePokemonSpecies(pokemonName);
+
+  if (detailQ.isLoading || speciesQ.isLoading) {
+    return (
+      <View style={[styles.page, { justifyContent: 'center' }]}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (detailQ.isError) {
+    return (
+      <View style={[styles.page, { padding: 18 }]}>
+        <Text>detail error: {(detailQ.error as Error).message}</Text>
+      </View>
+    );
+  }
+
+  if (speciesQ.isError) {
+    return (
+      <View style={[styles.page, { padding: 18 }]}>
+        <Text>species error: {(speciesQ.error as Error).message}</Text>
+      </View>
+    );
+  }
+
+  const p = detailQ.data!;
+  const s = speciesQ.data!;
+
+  // --- 表示用に整形（UIを崩さないためにここで全部作る） ---
+  const displayNo = padNo(p.id);
+  const displayName = pickJapaneseName(s); // 日本語名（speciesから）
+  const description =
+    pickJapaneseFlavorText(s) ?? '図鑑説明が見つかりませんでした';
+
+  const heroImageUri =
+    p.sprites.other?.['official-artwork']?.front_default ??
+    p.sprites.front_default ??
+    '';
+
+  const types = p.types
+    .slice()
+    .sort((a, b) => a.slot - b.slot)
+    .map((t) => ({
+      key: t.type.name,
+      label: TYPE_JA[t.type.name] ?? t.type.name,
+    }));
+
+  const baseStats = p.stats
+    .map((st) => ({
+      key: st.stat.name,
+      label: STAT_LABEL[st.stat.name] ?? st.stat.name,
+      value: st.base_stat,
+      color: STAT_COLOR[st.stat.name] ?? '#4d8ddb',
+    }))
+    // 表示順を固定（UIの並びを守る）
+    .sort(
+      (a, b) =>
+        [
+          'hp',
+          'attack',
+          'defense',
+          'special-attack',
+          'special-defense',
+          'speed',
+        ].indexOf(a.key) -
+        [
+          'hp',
+          'attack',
+          'defense',
+          'special-attack',
+          'special-defense',
+          'speed',
+        ].indexOf(b.key),
+    );
+
+  const heightText = toMeters(p.height);
+  const weightText = toKg(p.weight);
+
+  const abilityText =
+    p.abilities
+      .slice()
+      .sort((a, b) => a.slot - b.slot)
+      .map((a) => a.ability.name) // ここは英語。日本語化は追加APIが必要
+      .join(' / ') || '-';
+
+  const expText = String(p.base_experience ?? '-');
+
+  const moveList = p.moves.slice(0, 4).map((m) => m.move.name); // 英語。日本語化は追加APIが必要
+
+  // ------------------------------------------------------------
+
   return (
     <View style={styles.page}>
       <View style={styles.bgA} />
@@ -33,31 +169,34 @@ export default function PokemonDetailMockScreen() {
         <View>
           <View style={styles.heroHeader}>
             <View>
-              <Text style={styles.no}>#0006</Text>
-              <Text style={styles.name}>リザードン</Text>
+              <Text style={styles.no}>{displayNo}</Text>
+              <Text style={styles.name}>{displayName}</Text>
+
               <View style={styles.typeRow}>
-                <View style={[styles.typeChip, { backgroundColor: '#f6c89c' }]}>
-                  <Text style={[styles.typeText, { color: '#8a4e20' }]}>
-                    ほのお
-                  </Text>
-                </View>
-                <View style={[styles.typeChip, { backgroundColor: '#c9defb' }]}>
-                  <Text style={[styles.typeText, { color: '#2e5f9b' }]}>
-                    ひこう
-                  </Text>
-                </View>
+                {types.map((t) => (
+                  <View
+                    key={t.key}
+                    style={[styles.typeChip, { backgroundColor: '#f5f7fb' }]}
+                  >
+                    <Text style={[styles.typeText, { color: '#5f6672' }]}>
+                      {t.label}
+                    </Text>
+                  </View>
+                ))}
               </View>
             </View>
           </View>
 
           <View style={styles.heroImageStage}>
             <View style={styles.heroGlow} />
-            <Image
-              source={{ uri: HERO_IMAGE_URI }}
-              contentFit="contain"
-              transition={200}
-              style={styles.heroImage}
-            />
+            {heroImageUri ? (
+              <Image
+                source={{ uri: heroImageUri }}
+                contentFit="contain"
+                transition={200}
+                style={styles.heroImage}
+              />
+            ) : null}
           </View>
         </View>
 
@@ -66,27 +205,25 @@ export default function PokemonDetailMockScreen() {
             <Text style={styles.blockTitle}>プロフィール</Text>
             <MaterialIcons name="favorite-border" size={20} color="#7c838f" />
           </View>
-          <Text style={styles.description}>
-            つよい つばさで こうくうし、たかい ねつの ほのおを
-            はきだす。ここはAPI接続後に図鑑説明文を表示。
-          </Text>
+
+          <Text style={styles.description}>{description}</Text>
 
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
               <Text style={styles.infoKey}>たかさ</Text>
-              <Text style={styles.infoValue}>1.7 m</Text>
+              <Text style={styles.infoValue}>{heightText}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoKey}>おもさ</Text>
-              <Text style={styles.infoValue}>90.5 kg</Text>
+              <Text style={styles.infoValue}>{weightText}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoKey}>とくせい</Text>
-              <Text style={styles.infoValue}>もうか</Text>
+              <Text style={styles.infoValue}>{abilityText}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoKey}>けいけんち</Text>
-              <Text style={styles.infoValue}>267</Text>
+              <Text style={styles.infoValue}>{expText}</Text>
             </View>
           </View>
         </View>
@@ -94,8 +231,8 @@ export default function PokemonDetailMockScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.blockTitle}>種族値</Text>
           <View style={styles.statsWrap}>
-            {BASE_STATS.map((stat) => (
-              <View key={stat.label} style={styles.statRow}>
+            {baseStats.map((stat) => (
+              <View key={stat.key} style={styles.statRow}>
                 <Text style={styles.statLabel}>{stat.label}</Text>
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <View style={styles.barTrack}>
@@ -114,6 +251,7 @@ export default function PokemonDetailMockScreen() {
           </View>
         </View>
 
+        {/* 進化ラインは別API（evolution-chain）が必要なので、UI維持のため今は固定表示のまま */}
         <View style={styles.infoCard}>
           <Text style={styles.blockTitle}>進化ライン</Text>
           <View style={styles.evolutionRow}>
@@ -128,7 +266,7 @@ export default function PokemonDetailMockScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.blockTitle}>覚えるわざ</Text>
           <View style={styles.moveWrap}>
-            {MOVE_LIST.map((move) => (
+            {moveList.map((move) => (
               <View key={move} style={styles.moveChip}>
                 <Text style={styles.moveLabel}>{move}</Text>
               </View>
