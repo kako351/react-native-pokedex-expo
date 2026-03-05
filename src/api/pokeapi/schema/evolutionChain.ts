@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { NamedApiResource } from './namedApiResource';
 
 type ChainLink = {
-    species: { name: string; url: string };
-    evolves_to: ChainLink[];
-  };
+  species: { name: string; url: string };
+  evolves_to: ChainLink[];
+};
 
 const ChainLinkSchema: z.ZodType<ChainLink> = z.lazy(() =>
   z.object({

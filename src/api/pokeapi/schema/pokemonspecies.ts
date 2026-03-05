@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NamedApiResource } from './namedApiResource'; 
+import { NamedApiResource } from './namedApiResource';
 
 export const PokemonSpeciesSchema = z.object({
   name: z.string(),
