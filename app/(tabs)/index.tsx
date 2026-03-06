@@ -136,6 +136,7 @@ function ListHeader() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.filterScroll}
         contentContainerStyle={styles.filterRow}
       >
         {FILTER_TYPES.map((type, idx) => (
@@ -316,7 +317,11 @@ const styles = StyleSheet.create({
   filterRow: {
     marginTop: 14,
     gap: 8,
-    paddingRight: 12,
+    paddingRight: 32,
+  },
+  filterScroll: {
+    marginHorizontal: -18,
+    paddingLeft: 16,
   },
   filterChip: {
     borderRadius: 999,
