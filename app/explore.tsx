@@ -276,7 +276,7 @@ export default function PokemonDetailMockScreen() {
   const radarAxes = baseStats.map((stat) => ({
     label: stat.label,
     value: stat.value,
-    maxValue: 255,
+    maxValue: 180,
   }));
 
   return (
@@ -353,7 +353,7 @@ export default function PokemonDetailMockScreen() {
                   <GameRadar
                     axes={radarAxes}
                     size={280}
-                    rings={5}
+                    rings={0}
                     showLabels
                     showGrid={false}
                     animated={false}
