@@ -1,11 +1,12 @@
 import {
-  type PokemonDetailScreenData,
   usePokemonDetailScreen,
+  type PokemonDetailScreenData,
 } from '@/src/features/pokedex/usePokemonDetailScreen';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { GameRadar } from '@kako351/react-native-game-radar';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Component, useEffect, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -115,6 +116,40 @@ function MoveChips({ moves }: MoveChipsProps) {
       ))}
     </View>
   );
+}
+
+type RadarBoundaryProps = {
+  children: ReactNode;
+};
+
+type RadarBoundaryState = {
+  hasError: boolean;
+};
+
+class RadarBoundary extends Component<RadarBoundaryProps, RadarBoundaryState> {
+  state: RadarBoundaryState = {
+    hasError: false,
+  };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error('GameRadar render error', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Text style={styles.radarFallbackText}>
+          レーダーグラフを表示できませんでした。
+        </Text>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 const EXPANDED_HEADER_HEIGHT = 480;
@@ -238,6 +273,11 @@ export default function PokemonDetailMockScreen() {
   } = screenQ.data;
 
   const canShowMoreMoves = moveList.length < moveTotalCount;
+  const radarAxes = baseStats.map((stat) => ({
+    label: stat.label,
+    value: stat.value,
+    maxValue: 180,
+  }));
 
   return (
     <View style={styles.page}>
@@ -307,6 +347,29 @@ export default function PokemonDetailMockScreen() {
             {baseStats.map((stat) => (
               <StatRow key={stat.key} stat={stat} />
             ))}
+            <View style={styles.radarWrap}>
+              <RadarBoundary>
+                <View style={styles.radarSurface}>
+                  <GameRadar
+                    axes={radarAxes}
+                    size={280}
+                    rings={0}
+                    showLabels
+                    showGrid={false}
+                    animated={false}
+                    theme={{
+                      background: '#ffffff',
+                      gridColor: '#ededed',
+                      axisColor: '#ededed',
+                      areaFill: 'rgba(56, 189, 248, 0.24)',
+                      areaStroke: '#38bdf8',
+                      glowColor: 'rgba(56, 189, 248, 0.0)',
+                      labelColor: '#5f6672',
+                    }}
+                  />
+                </View>
+              </RadarBoundary>
+            </View>
           </View>
         </InfoCard>
 
@@ -549,6 +612,18 @@ const styles = StyleSheet.create({
   },
   statsWrap: {
     gap: 8,
+  },
+  radarWrap: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  radarSurface: {
+    borderRadius: 12,
+    padding: 6,
+  },
+  radarFallbackText: {
+    fontSize: 12,
+    color: '#7c838f',
   },
   statRow: {
     flexDirection: 'row',
