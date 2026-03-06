@@ -92,7 +92,7 @@ export function usePokemonSpecies(name: string) {
     queryKey: pokemonKeys.species(name),
     queryFn: () => fetchPokemonSpecies(name),
     enabled: !!name,
-    staleTime: 0,
+    staleTime: STALE_TIME,
   });
 }
 
