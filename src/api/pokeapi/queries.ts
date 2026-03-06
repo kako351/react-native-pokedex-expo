@@ -91,7 +91,7 @@ export function usePokemonSpecies(name: string) {
     queryKey: pokemonKeys.species(name),
     queryFn: () => fetchPokemonSpecies(name),
     enabled: !!name,
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: 0,
   });
 }
 
@@ -100,7 +100,7 @@ export function useSpeciesQueries(names: Array<string>) {
     queries: names.map((name) => ({
       queryKey: ['pokemon', 'species', name] as const,
       queryFn: () => fetchPokemonSpecies(name),
-      staleTime: 24 * 60 * 60 * 1000,
+      staleTime: 0,
     })),
   });
 }
@@ -116,6 +116,6 @@ export function useEvolutionChain(url?: string) {
     queryKey: url ? pokemonKeys.evolutionChain(url) : pokemonKeys.all,
     queryFn: () => fetchEvolutionChain(url!),
     enabled: !!url,
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: 0,
   });
 }
