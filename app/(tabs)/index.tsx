@@ -186,7 +186,7 @@ function PokemonCard({ item, isLeft }: PokemonCardProps) {
               />
             </View>
             <Text style={styles.cardName} numberOfLines={1}>
-              {item.name}
+              {item.displayName}
             </Text>
             <View style={styles.typeRow}>
               {theme.typeLabels.map((typeLabel) => (

@@ -1,9 +1,17 @@
-import { usePokemonListInfinite } from '@/src/api/pokeapi/queries';
+import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
+import {
+  usePokemonListInfinite,
+  usePokemonSpecies,
+  useSpeciesQueries,
+} from '@/src/api/pokeapi/queries';
+import { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
+import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 export type PokemonListItem = {
   id: number;
   name: string;
+  displayName: string;
   displayNo: string;
   imageUrl: string;
 };
@@ -24,19 +32,25 @@ const extractIdFromUrl = (url: string): number => {
 
 export function usePokemonList(perPage = PER_PARGE) {
   const q = usePokemonListInfinite(perPage);
+  const raw = q.data?.pages.flatMap((p) => p.results) ?? [];
+  const names = raw.map((r) => r.name);
+
+  const speciesQueries = useSpeciesQueries(names);
 
   const items: PokemonListItem[] = useMemo(() => {
-    const raw = q.data?.pages.flatMap((p) => p.results) ?? [];
-    return raw.map((p) => {
+    return raw.map((p, idx) => {
       const id = extractIdFromUrl(p.url);
+      const species = speciesQueries[idx]?.data;
+      const displayName = species ? pickJapaneseName(species) : p.name;
       return {
         id,
         name: p.name,
+        displayName: displayName,
         displayNo: padNo(id),
         imageUrl: artworkUrl(id),
       };
     });
-  }, [q.data]);
+  }, [raw, speciesQueries]);
 
   return {
     items,

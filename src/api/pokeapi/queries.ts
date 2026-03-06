@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import {
   fetchEvolutionChain,
   fetchPokemonDetail,
@@ -92,6 +92,16 @@ export function usePokemonSpecies(name: string) {
     queryFn: () => fetchPokemonSpecies(name),
     enabled: !!name,
     staleTime: 24 * 60 * 60 * 1000,
+  });
+}
+
+export function useSpeciesQueries(names: Array<string>) {
+  return useQueries({
+    queries: names.map((name) => ({
+      queryKey: ['pokemon', 'species', name] as const,
+      queryFn: () => fetchPokemonSpecies(name),
+      staleTime: 24 * 60 * 60 * 1000,
+    })),
   });
 }
 
