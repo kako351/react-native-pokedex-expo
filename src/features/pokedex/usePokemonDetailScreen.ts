@@ -17,6 +17,7 @@ import { PokemonDetail } from '@/src/api/pokeapi/schema/pokemondetail';
 import { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { toJapaneseTypeLabel } from './pokemonTypeLabel';
 
 const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
 const toMeters = (dm: number) => `${(dm / 10).toFixed(1)} m`;
@@ -38,27 +39,6 @@ const STAT_COLOR: Record<string, string> = {
   'special-attack': '#4d8ddb',
   'special-defense': '#4cb27b',
   speed: '#8f73d9',
-};
-
-const TYPE_JA: Record<string, string> = {
-  grass: 'くさ',
-  poison: 'どく',
-  fire: 'ほのお',
-  water: 'みず',
-  electric: 'でんき',
-  normal: 'ノーマル',
-  fairy: 'フェアリー',
-  flying: 'ひこう',
-  bug: 'むし',
-  ground: 'じめん',
-  rock: 'いわ',
-  psychic: 'エスパー',
-  ice: 'こおり',
-  dragon: 'ドラゴン',
-  dark: 'あく',
-  steel: 'はがね',
-  fighting: 'かくとう',
-  ghost: 'ゴースト',
 };
 
 const sortBySlot = <T extends { slot: number }>(a: T, b: T) => a.slot - b.slot;
@@ -213,7 +193,7 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
       .sort(sortBySlot)
       .map((t) => ({
         key: t.type.name,
-        label: TYPE_JA[t.type.name] ?? t.type.name,
+        label: toJapaneseTypeLabel(t.type.name),
       }));
 
     const baseStats = p.stats

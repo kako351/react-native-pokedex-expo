@@ -102,11 +102,27 @@ export function usePokemonSpecies(name: string) {
  * @param names 種族情報を取得したいポケモン名の配列
  * @returns 各ポケモン名に対応する種族情報クエリ結果の配列
  */
-export function useSpeciesQueries(names: Array<string>) {
+export function useSpeciesQueries(names: string[]) {
   return useQueries({
     queries: names.map((name) => ({
       queryKey: ['pokemon', 'species', name] as const,
       queryFn: () => fetchPokemonSpecies(name),
+      staleTime: STALE_TIME,
+    })),
+  });
+}
+
+/**
+ * 複数のポケモン名に対して詳細情報クエリを一括で実行するフックです。
+ *
+ * @param names 詳細情報を取得したいポケモン名の配列
+ * @returns 各ポケモン名に対応する詳細情報クエリ結果の配列
+ */
+export function useDetailQueries(names: string[]) {
+  return useQueries({
+    queries: names.map((name) => ({
+      queryKey: ['pokemon', 'detail', name] as const,
+      queryFn: () => fetchPokemonDetail(name),
       staleTime: STALE_TIME,
     })),
   });

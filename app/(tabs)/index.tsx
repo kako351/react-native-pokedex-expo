@@ -27,17 +27,32 @@ const FILTER_TYPES = [
   'フェアリー',
 ];
 
-const CARD_THEMES = [
-  { accent: '#4f9c7d', bg: '#ddf6ea', typeLabels: ['くさ', 'どく'] },
-  { accent: '#db6d3f', bg: '#ffe9de', typeLabels: ['ほのお'] },
-  { accent: '#4c82d9', bg: '#dfecff', typeLabels: ['みず'] },
-  { accent: '#d7a62e', bg: '#fff4cf', typeLabels: ['でんき'] },
-  { accent: '#ba6d9a', bg: '#ffe2f2', typeLabels: ['フェアリー'] },
-  { accent: '#9a7a52', bg: '#f7ecde', typeLabels: ['ノーマル'] },
-] as const;
+const DEFAULT_CARD_THEME = { accent: '#5f6672', bg: '#edf1f7' } as const;
 
-function getCardTheme(id: number) {
-  return CARD_THEMES[(id - 1) % CARD_THEMES.length];
+const CARD_THEME_BY_TYPE: Record<string, { accent: string; bg: string }> = {
+  grass: { accent: '#4f9c7d', bg: '#ddf6ea' },
+  poison: { accent: '#8a63b8', bg: '#f0e7ff' },
+  fire: { accent: '#db6d3f', bg: '#ffe9de' },
+  water: { accent: '#4c82d9', bg: '#dfecff' },
+  electric: { accent: '#d7a62e', bg: '#fff4cf' },
+  normal: { accent: '#9a7a52', bg: '#f7ecde' },
+  fairy: { accent: '#ba6d9a', bg: '#ffe2f2' },
+  flying: { accent: '#6d8ec9', bg: '#e8f0ff' },
+  bug: { accent: '#72983a', bg: '#edf8db' },
+  ground: { accent: '#aa8b4b', bg: '#f8efd9' },
+  rock: { accent: '#8e8171', bg: '#eee8df' },
+  psychic: { accent: '#d95f8a', bg: '#ffe6ef' },
+  ice: { accent: '#58a8bb', bg: '#e2f8fd' },
+  dragon: { accent: '#5a6bc9', bg: '#e6e9ff' },
+  dark: { accent: '#5a5a62', bg: '#ececf1' },
+  steel: { accent: '#6e8595', bg: '#e6eef3' },
+  fighting: { accent: '#bf5b48', bg: '#fde9e4' },
+  ghost: { accent: '#7a6ab6', bg: '#eee9ff' },
+};
+
+function getCardTheme(primaryType: string | null) {
+  if (!primaryType) return DEFAULT_CARD_THEME;
+  return CARD_THEME_BY_TYPE[primaryType] ?? DEFAULT_CARD_THEME;
 }
 
 export default function PokedexScreen() {
@@ -154,7 +169,7 @@ type PokemonCardProps = {
 };
 
 function PokemonCard({ item, isLeft }: PokemonCardProps) {
-  const theme = getCardTheme(item.id);
+  const theme = getCardTheme(item.primaryType);
   return (
     <View
       style={[
@@ -189,7 +204,7 @@ function PokemonCard({ item, isLeft }: PokemonCardProps) {
               {item.displayName}
             </Text>
             <View style={styles.typeRow}>
-              {theme.typeLabels.map((typeLabel) => (
+              {item.typeLabels.map((typeLabel) => (
                 <View
                   key={`${item.id}-${typeLabel}`}
                   style={[styles.typePill, { borderColor: theme.accent }]}
