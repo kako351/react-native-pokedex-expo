@@ -102,9 +102,9 @@ export function useSpeciesQueries(names: Array<string>) {
       queryFn: () => fetchPokemonSpecies(name),
       staleTime: 24 * 60 * 60 * 1000,
     })),
-  })
+  });
 }
- 
+
 /**
  * 指定した進化チェーンURLから進化情報を取得するクエリフックです。
  *

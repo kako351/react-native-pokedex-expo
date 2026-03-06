@@ -1,5 +1,9 @@
 import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
-import { usePokemonListInfinite, usePokemonSpecies, useSpeciesQueries } from '@/src/api/pokeapi/queries';
+import {
+  usePokemonListInfinite,
+  usePokemonSpecies,
+  useSpeciesQueries,
+} from '@/src/api/pokeapi/queries';
 import { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
@@ -7,7 +11,7 @@ import { useMemo } from 'react';
 export type PokemonListItem = {
   id: number;
   name: string;
-  displayName: string,
+  displayName: string;
   displayNo: string;
   imageUrl: string;
 };
@@ -29,7 +33,7 @@ const extractIdFromUrl = (url: string): number => {
 export function usePokemonList(perPage = PER_PARGE) {
   const q = usePokemonListInfinite(perPage);
   const raw = q.data?.pages.flatMap((p) => p.results) ?? [];
-  const names = raw.map((r) => r.name );
+  const names = raw.map((r) => r.name);
 
   const speciesQueries = useSpeciesQueries(names);
 
