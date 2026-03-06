@@ -72,7 +72,7 @@ export default function PokedexScreen() {
       <View style={styles.bgOrbBottom} />
 
       {isLoading ? (
-        <ActivityIndicator style={styles.centerLoader} />
+        <ActivityIndicator size="large" style={styles.centerLoader} />
       ) : isError ? (
         <Text style={styles.errorText}>
           エラーが発生しました:{' '}
@@ -95,7 +95,7 @@ export default function PokedexScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage ? (
-              <ActivityIndicator style={styles.footerLoader} />
+              <ActivityIndicator size="large" style={styles.footerLoader} />
             ) : null
           }
           renderItem={({ item, index }) => (

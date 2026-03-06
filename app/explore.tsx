@@ -201,7 +201,7 @@ export default function PokemonDetailMockScreen() {
   if (screenQ.isLoading) {
     return (
       <View style={[styles.page, { justifyContent: 'center' }]}>
-        <ActivityIndicator />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
