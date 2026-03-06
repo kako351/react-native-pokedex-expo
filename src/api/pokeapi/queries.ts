@@ -8,6 +8,7 @@ import {
 
 const PER_PARGE: number = 30;
 const INITIAL_PAGE: number = 0;
+const STALE_TIME: number = 24 * 60 * 60 * 1000;
 
 export const pokemonKeys = {
   all: ['pokemon'] as const,
@@ -91,16 +92,22 @@ export function usePokemonSpecies(name: string) {
     queryKey: pokemonKeys.species(name),
     queryFn: () => fetchPokemonSpecies(name),
     enabled: !!name,
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: STALE_TIME,
   });
 }
 
+/**
+ * 複数のポケモン名に対して種族情報クエリを一括で実行するフックです。
+ *
+ * @param names 種族情報を取得したいポケモン名の配列
+ * @returns 各ポケモン名に対応する種族情報クエリ結果の配列
+ */
 export function useSpeciesQueries(names: Array<string>) {
   return useQueries({
     queries: names.map((name) => ({
       queryKey: ['pokemon', 'species', name] as const,
       queryFn: () => fetchPokemonSpecies(name),
-      staleTime: 24 * 60 * 60 * 1000,
+      staleTime: STALE_TIME,
     })),
   });
 }
@@ -116,6 +123,6 @@ export function useEvolutionChain(url?: string) {
     queryKey: url ? pokemonKeys.evolutionChain(url) : pokemonKeys.all,
     queryFn: () => fetchEvolutionChain(url!),
     enabled: !!url,
-    staleTime: 24 * 60 * 60 * 1000,
+    staleTime: STALE_TIME,
   });
 }
