@@ -27,33 +27,16 @@ const FILTER_TYPES = [
   'フェアリー',
 ];
 
-const DEFAULT_CARD_THEME = { accent: '#5f6672', bg: '#edf1f7' } as const;
-
-const CARD_THEME_BY_TYPE: Record<string, { accent: string; bg: string }> = {
-  grass: { accent: '#4f9c7d', bg: '#ddf6ea' },
-  poison: { accent: '#8a63b8', bg: '#f0e7ff' },
-  fire: { accent: '#db6d3f', bg: '#ffe9de' },
-  water: { accent: '#4c82d9', bg: '#dfecff' },
-  electric: { accent: '#d7a62e', bg: '#fff4cf' },
-  normal: { accent: '#9a7a52', bg: '#f7ecde' },
-  fairy: { accent: '#ba6d9a', bg: '#ffe2f2' },
-  flying: { accent: '#6d8ec9', bg: '#e8f0ff' },
-  bug: { accent: '#72983a', bg: '#edf8db' },
-  ground: { accent: '#aa8b4b', bg: '#f8efd9' },
-  rock: { accent: '#8e8171', bg: '#eee8df' },
-  psychic: { accent: '#d95f8a', bg: '#ffe6ef' },
-  ice: { accent: '#58a8bb', bg: '#e2f8fd' },
-  dragon: { accent: '#5a6bc9', bg: '#e6e9ff' },
-  dark: { accent: '#5a5a62', bg: '#ececf1' },
-  steel: { accent: '#6e8595', bg: '#e6eef3' },
-  fighting: { accent: '#bf5b48', bg: '#fde9e4' },
-  ghost: { accent: '#7a6ab6', bg: '#eee9ff' },
-};
-
-function getCardTheme(primaryType: string | null) {
-  if (!primaryType) return DEFAULT_CARD_THEME;
-  return CARD_THEME_BY_TYPE[primaryType] ?? DEFAULT_CARD_THEME;
-}
+const CARD_BG_COLORS = [
+  '#edf1f7',
+  '#ffe9de',
+  '#dfecff',
+  '#ddf6ea',
+  '#fff4cf',
+  '#f0e7ff',
+  '#fde9e4',
+  '#e8f0ff',
+] as const;
 
 export default function PokedexScreen() {
   const {
@@ -170,13 +153,15 @@ type PokemonCardProps = {
 };
 
 function PokemonCard({ item, isLeft }: PokemonCardProps) {
-  const theme = getCardTheme(item.primaryType);
+  const backgroundColor =
+    CARD_BG_COLORS[(Math.max(item.id, 1) - 1) % CARD_BG_COLORS.length];
+
   return (
     <View
       style={[
         styles.cardCell,
         isLeft ? styles.cardLeft : styles.cardRight,
-        { backgroundColor: theme.bg },
+        { backgroundColor },
       ]}
     >
       <Link
@@ -204,18 +189,6 @@ function PokemonCard({ item, isLeft }: PokemonCardProps) {
             <Text style={styles.cardName} numberOfLines={1}>
               {item.displayName}
             </Text>
-            <View style={styles.typeRow}>
-              {item.typeLabels.map((typeLabel) => (
-                <View
-                  key={`${item.id}-${typeLabel}`}
-                  style={[styles.typePill, { borderColor: theme.accent }]}
-                >
-                  <Text style={[styles.typeText, { color: theme.accent }]}>
-                    {typeLabel}
-                  </Text>
-                </View>
-              ))}
-            </View>
           </View>
         </Pressable>
       </Link>
@@ -414,24 +387,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1f242d',
     lineHeight: 22,
-  },
-  typeRow: {
-    marginTop: 9,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  typePill: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    backgroundColor: '#ffffffcc',
-  },
-  typeText: {
-    fontSize: 11,
-    fontWeight: '800',
   },
   pokemonImage: {
     width: '82%',
