@@ -1,10 +1,8 @@
 import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
 import {
-  useDetailQueries,
   usePokemonListInfinite,
   useSpeciesQueries,
 } from '@/src/api/pokeapi/queries';
-import { toJapaneseTypeLabel } from './pokemonTypeLabel';
 import { useMemo } from 'react';
 
 export type PokemonListItem = {
@@ -13,8 +11,6 @@ export type PokemonListItem = {
   displayName: string;
   displayNo: string;
   imageUrl: string;
-  primaryType: string | null;
-  typeLabels: string[];
 };
 
 const PER_PARGE: number = 30;
@@ -40,31 +36,21 @@ export function usePokemonList(perPage = PER_PARGE) {
   const names = raw.map((r) => r.name);
 
   const speciesQueries = useSpeciesQueries(names);
-  const detailQueries = useDetailQueries(names);
 
   const items: PokemonListItem[] = useMemo(() => {
     return raw.map((p, idx) => {
       const id = extractIdFromUrl(p.url);
       const species = speciesQueries[idx]?.data;
-      const detail = detailQueries[idx]?.data;
       const displayName = species ? pickJapaneseName(species) : p.name;
-      const sortedTypes =
-        detail?.types.slice().sort((a, b) => a.slot - b.slot) ?? [];
-      const primaryType = sortedTypes[0]?.type.name ?? null;
-      const typeLabels = sortedTypes.map((t) =>
-        toJapaneseTypeLabel(t.type.name),
-      );
       return {
         id,
         name: p.name,
         displayName: displayName,
         displayNo: padNo(id),
         imageUrl: artworkUrl(id),
-        primaryType,
-        typeLabels,
       };
     });
-  }, [raw, speciesQueries, detailQueries]);
+  }, [raw, speciesQueries]);
 
   return {
     items,
