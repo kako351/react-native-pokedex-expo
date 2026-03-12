@@ -4,7 +4,7 @@ import {
   usePokemonType,
   useSpeciesQueries,
 } from '@/src/api/pokeapi/queries';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export type PokemonListItem = {
   id: number;
@@ -28,26 +28,52 @@ const extractIdFromUrl = (url: string): number => {
   return Number(m[1]);
 };
 
-const noOpFetchNextPage = async () => undefined;
-
 export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
   const isTypeFilterActive = !!selectedType;
+  const [typePage, setTypePage] = useState(1);
+  const [isTypeFetchingNextPage, setIsTypeFetchingNextPage] = useState(false);
+
+  useEffect(() => {
+    setTypePage(1);
+    setIsTypeFetchingNextPage(false);
+  }, [selectedType]);
+
   const q = usePokemonListInfinite(perPage, !isTypeFilterActive);
   const typeQ = usePokemonType(selectedType);
   const rawFromList = useMemo(
     () => q.data?.pages.flatMap((p) => p.results) ?? [],
     [q.data?.pages],
   );
-  const rawFromType = useMemo(() => {
+  const rawFromTypeAll = useMemo(() => {
     if (!typeQ.data) return [];
     return typeQ.data.pokemon
       .map((entry) => entry.pokemon)
       .sort((a, b) => extractIdFromUrl(a.url) - extractIdFromUrl(b.url));
   }, [typeQ.data]);
+  const rawFromType = useMemo(
+    () => rawFromTypeAll.slice(0, typePage * perPage),
+    [rawFromTypeAll, typePage, perPage],
+  );
+  const hasNextTypePage = rawFromType.length < rawFromTypeAll.length;
   const raw = isTypeFilterActive ? rawFromType : rawFromList;
   const names = raw.map((r) => r.name);
 
   const speciesQueries = useSpeciesQueries(names);
+  const isSpeciesLoading = speciesQueries.some(
+    (speciesQ) => speciesQ.isLoading,
+  );
+
+  useEffect(() => {
+    if (isTypeFetchingNextPage && !isSpeciesLoading) {
+      setIsTypeFetchingNextPage(false);
+    }
+  }, [isTypeFetchingNextPage, isSpeciesLoading]);
+
+  const fetchNextTypePage = useCallback(async () => {
+    if (!hasNextTypePage || isTypeFetchingNextPage) return;
+    setIsTypeFetchingNextPage(true);
+    setTypePage((prev) => prev + 1);
+  }, [hasNextTypePage, isTypeFetchingNextPage]);
 
   const items: PokemonListItem[] = useMemo(() => {
     return raw.map((p, idx) => {
@@ -66,12 +92,16 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
 
   return {
     items,
-    isLoading: isTypeFilterActive ? typeQ.isLoading : q.isLoading,
+    isLoading: isTypeFilterActive
+      ? typeQ.isLoading || isSpeciesLoading
+      : q.isLoading,
     isError: isTypeFilterActive ? typeQ.isError : q.isError,
     error: isTypeFilterActive ? typeQ.error : q.error,
-    fetchNextPage: isTypeFilterActive ? noOpFetchNextPage : q.fetchNextPage,
-    hasNextPage: isTypeFilterActive ? false : q.hasNextPage,
-    isFetchingNextPage: isTypeFilterActive ? false : q.isFetchingNextPage,
+    fetchNextPage: isTypeFilterActive ? fetchNextTypePage : q.fetchNextPage,
+    hasNextPage: isTypeFilterActive ? hasNextTypePage : q.hasNextPage,
+    isFetchingNextPage: isTypeFilterActive
+      ? isTypeFetchingNextPage
+      : q.isFetchingNextPage,
     refetch: isTypeFilterActive ? typeQ.refetch : q.refetch,
   };
 }
