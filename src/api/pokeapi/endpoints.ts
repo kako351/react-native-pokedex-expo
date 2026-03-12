@@ -14,4 +14,7 @@ export const pokeApiEndpoints = {
 
   /** ポケモン種族データ取得用エンドポイント。 */
   pokemonSpecies: '/pokemon-species',
+
+  /** タイプ情報取得用エンドポイント。 */
+  type: '/type',
 } as const;

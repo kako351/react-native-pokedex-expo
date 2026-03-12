@@ -9,22 +9,41 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { useState } from 'react';
 
 import {
   type PokemonListItem,
   usePokemonList,
 } from '@/src/features/pokedex/usePokemonList';
 
-const FILTER_TYPES = [
-  'すべて',
-  'くさ',
-  'ほのお',
-  'みず',
-  'でんき',
-  'ノーマル',
-  'フェアリー',
+type FilterType = {
+  label: string;
+  value?: string;
+};
+
+const FILTER_TYPES: FilterType[] = [
+  { label: 'すべて' },
+  { label: 'ノーマル', value: 'normal' },
+  { label: 'くさ', value: 'grass' },
+  { label: 'ほのお', value: 'fire' },
+  { label: 'みず', value: 'water' },
+  { label: 'でんき', value: 'electric' },
+  { label: 'こおり', value: 'ice' },
+  { label: 'かくとう', value: 'fighting' },
+  { label: 'どく', value: 'poison' },
+  { label: 'じめん', value: 'ground' },
+  { label: 'ひこう', value: 'flying' },
+  { label: 'エスパー', value: 'psychic' },
+  { label: 'むし', value: 'bug' },
+  { label: 'いわ', value: 'rock' },
+  { label: 'ゴースト', value: 'ghost' },
+  { label: 'ドラゴン', value: 'dragon' },
+  { label: 'あく', value: 'dark' },
+  { label: 'はがね', value: 'steel' },
+  { label: 'フェアリー', value: 'fairy' },
 ];
 
 const CARD_BG_COLORS = [
@@ -38,7 +57,31 @@ const CARD_BG_COLORS = [
   '#e8f0ff',
 ] as const;
 
+const TYPE_BG_BY_FILTER: Record<string, string> = {
+  normal: '#f7ecde',
+  grass: '#ddf6ea',
+  fire: '#ffe9de',
+  water: '#dfecff',
+  electric: '#fff4cf',
+  ice: '#e2f8fd',
+  fighting: '#fde9e4',
+  poison: '#f0e7ff',
+  ground: '#f8efd9',
+  flying: '#e8f0ff',
+  psychic: '#ffe6ef',
+  bug: '#edf8db',
+  rock: '#eee8df',
+  ghost: '#eee9ff',
+  dragon: '#e6e9ff',
+  dark: '#ececf1',
+  steel: '#e6eef3',
+  fairy: '#ffe2f2',
+};
+
 export default function PokedexScreen() {
+  const [selectedType, setSelectedType] = useState<string | undefined>(
+    undefined,
+  );
   const {
     items,
     isLoading,
@@ -47,16 +90,19 @@ export default function PokedexScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = usePokemonList();
+  } = usePokemonList(undefined, selectedType);
+  const isTypeFiltering = !!selectedType;
+  const showInlineListLoading = isTypeFiltering && isLoading;
+  const showInlineListError = isTypeFiltering && isError;
 
   return (
     <View style={styles.page}>
       <View style={styles.bgOrbTop} />
       <View style={styles.bgOrbBottom} />
 
-      {isLoading ? (
+      {!isTypeFiltering && isLoading ? (
         <ActivityIndicator size="large" style={styles.centerLoader} />
-      ) : isError ? (
+      ) : !isTypeFiltering && isError ? (
         <Text style={styles.errorText}>
           エラーが発生しました:{' '}
           {error instanceof Error ? error.message : 'unknown'}
@@ -65,8 +111,14 @@ export default function PokedexScreen() {
         <FlatList
           data={items}
           numColumns={2}
+          extraData={selectedType}
           keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={ListHeader}
+          ListHeaderComponent={
+            <ListHeader
+              selectedType={selectedType}
+              onSelectType={setSelectedType}
+            />
+          }
           contentContainerStyle={styles.content}
           columnWrapperStyle={styles.cardRow}
           showsVerticalScrollIndicator={false}
@@ -81,8 +133,22 @@ export default function PokedexScreen() {
               <ActivityIndicator size="large" style={styles.footerLoader} />
             ) : null
           }
+          ListEmptyComponent={
+            showInlineListLoading ? (
+              <ActivityIndicator size="large" style={styles.inlineLoader} />
+            ) : showInlineListError ? (
+              <Text style={styles.inlineErrorText}>
+                エラーが発生しました:{' '}
+                {error instanceof Error ? error.message : 'unknown'}
+              </Text>
+            ) : null
+          }
           renderItem={({ item, index }) => (
-            <PokemonCard item={item} isLeft={index % 2 === 0} />
+            <PokemonCard
+              item={item}
+              isLeft={index % 2 === 0}
+              selectedType={selectedType}
+            />
           )}
         />
       )}
@@ -90,7 +156,12 @@ export default function PokedexScreen() {
   );
 }
 
-function ListHeader() {
+type ListHeaderProps = {
+  selectedType?: string;
+  onSelectType: (type?: string) => void;
+};
+
+function ListHeader({ selectedType, onSelectType }: ListHeaderProps) {
   return (
     <>
       <View style={styles.headerRow}>
@@ -119,30 +190,36 @@ function ListHeader() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         style={styles.filterScroll}
         contentContainerStyle={styles.filterRow}
       >
-        {FILTER_TYPES.map((type, idx) => (
-          <View
-            key={type}
-            style={[styles.filterChip, idx === 0 && styles.filterChipActive]}
-          >
-            <Text
-              style={[
-                styles.filterLabel,
-                idx === 0 && styles.filterLabelActive,
-              ]}
+        {FILTER_TYPES.map((type) => {
+          const isActive =
+            type.value === selectedType || (!type.value && !selectedType);
+          return (
+            <TouchableOpacity
+              key={type.label}
+              onPress={() =>
+                onSelectType(
+                  type.value === selectedType ? undefined : type.value,
+                )
+              }
+              activeOpacity={0.8}
+              style={[styles.filterChip, isActive && styles.filterChipActive]}
             >
-              {type}
-            </Text>
-          </View>
-        ))}
+              <Text
+                style={[
+                  styles.filterLabel,
+                  isActive && styles.filterLabelActive,
+                ]}
+              >
+                {type.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>No.001 - No.151</Text>
-        <Text style={styles.sectionMeta}>151匹</Text>
-      </View>
     </>
   );
 }
@@ -150,11 +227,13 @@ function ListHeader() {
 type PokemonCardProps = {
   item: PokemonListItem;
   isLeft: boolean;
+  selectedType?: string;
 };
 
-function PokemonCard({ item, isLeft }: PokemonCardProps) {
-  const backgroundColor =
-    CARD_BG_COLORS[(Math.max(item.id, 1) - 1) % CARD_BG_COLORS.length];
+function PokemonCard({ item, isLeft, selectedType }: PokemonCardProps) {
+  const backgroundColor = selectedType
+    ? (TYPE_BG_BY_FILTER[selectedType] ?? '#edf1f7')
+    : CARD_BG_COLORS[(Math.max(item.id, 1) - 1) % CARD_BG_COLORS.length];
 
   return (
     <View
@@ -232,8 +311,15 @@ const styles = StyleSheet.create({
   footerLoader: {
     marginTop: 16,
   },
+  inlineLoader: {
+    marginTop: 24,
+  },
   errorText: {
     marginTop: 120,
+    paddingHorizontal: 18,
+  },
+  inlineErrorText: {
+    marginTop: 24,
     paddingHorizontal: 18,
   },
   headerRow: {
@@ -295,6 +381,7 @@ const styles = StyleSheet.create({
   filterScroll: {
     marginHorizontal: -18,
     paddingLeft: 16,
+    marginBottom: 12,
   },
   filterChip: {
     borderRadius: 999,
@@ -315,23 +402,6 @@ const styles = StyleSheet.create({
   },
   filterLabelActive: {
     color: '#fff',
-  },
-  sectionHeader: {
-    marginTop: 14,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#1f242d',
-  },
-  sectionMeta: {
-    fontSize: 13,
-    color: '#6f7580',
-    fontWeight: '700',
   },
   cardRow: {
     justifyContent: 'space-between',
