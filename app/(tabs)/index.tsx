@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import {
   type PokemonListItem,
   usePokemonList,
@@ -46,7 +47,18 @@ const FILTER_TYPES: FilterType[] = [
   { label: 'フェアリー', value: 'fairy' },
 ];
 
-const CARD_BG_COLORS = [
+const LIGHT_CARD_BG_COLORS = [
+  '#edf1f7',
+  '#ffe9de',
+  '#dfecff',
+  '#ddf6ea',
+  '#fff4cf',
+  '#f0e7ff',
+  '#fde9e4',
+  '#e8f0ff',
+] as const;
+
+const DARK_CARD_BG_COLORS = [
   '#1a2a46',
   '#3d233b',
   '#153659',
@@ -57,7 +69,28 @@ const CARD_BG_COLORS = [
   '#23334f',
 ] as const;
 
-const TYPE_BG_BY_FILTER: Record<string, string> = {
+const LIGHT_TYPE_BG_BY_FILTER: Record<string, string> = {
+  normal: '#f7ecde',
+  grass: '#ddf6ea',
+  fire: '#ffe9de',
+  water: '#dfecff',
+  electric: '#fff4cf',
+  ice: '#e2f8fd',
+  fighting: '#fde9e4',
+  poison: '#f0e7ff',
+  ground: '#f8efd9',
+  flying: '#e8f0ff',
+  psychic: '#ffe6ef',
+  bug: '#edf8db',
+  rock: '#eee8df',
+  ghost: '#eee9ff',
+  dragon: '#e6e9ff',
+  dark: '#ececf1',
+  steel: '#e6eef3',
+  fairy: '#ffe2f2',
+};
+
+const DARK_TYPE_BG_BY_FILTER: Record<string, string> = {
   normal: '#2b3340',
   grass: '#193d3b',
   fire: '#4a2c2f',
@@ -79,6 +112,10 @@ const TYPE_BG_BY_FILTER: Record<string, string> = {
 };
 
 export default function PokedexScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const styles = isDark ? darkStyles : lightStyles;
+
   const [selectedType, setSelectedType] = useState<string | undefined>(
     undefined,
   );
@@ -115,6 +152,7 @@ export default function PokedexScreen() {
           keyExtractor={(item) => item.id.toString()}
           ListHeaderComponent={
             <ListHeader
+              isDark={isDark}
               selectedType={selectedType}
               onSelectType={setSelectedType}
             />
@@ -145,6 +183,7 @@ export default function PokedexScreen() {
           }
           renderItem={({ item, index }) => (
             <PokemonCard
+              isDark={isDark}
               item={item}
               isLeft={index % 2 === 0}
               selectedType={selectedType}
@@ -157,35 +196,53 @@ export default function PokedexScreen() {
 }
 
 type ListHeaderProps = {
+  isDark: boolean;
   selectedType?: string;
   onSelectType: (type?: string) => void;
 };
 
-function ListHeader({ selectedType, onSelectType }: ListHeaderProps) {
+function ListHeader({ isDark, selectedType, onSelectType }: ListHeaderProps) {
+  const styles = isDark ? darkStyles : lightStyles;
+  const iconColor = isDark ? '#7d90b1' : '#8a8f98';
+
   return (
     <>
-      <View style={styles.headerPanel}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Pokédex</Text>
-          <Text style={styles.subtitle}>図鑑スキャンを開始しよう</Text>
-          <View style={styles.missionBadge}>
-            <Text style={styles.missionBadgeLabel}>MISSION 151+</Text>
+      {isDark ? (
+        <View style={styles.headerPanel}>
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>Pokédex</Text>
+            <Text style={styles.subtitle}>図鑑スキャンを開始しよう</Text>
+            <View style={styles.missionBadge}>
+              <Text style={styles.missionBadgeLabel}>MISSION 151+</Text>
+            </View>
+          </View>
+          <View style={styles.ball}>
+            <View style={styles.ballInner} />
           </View>
         </View>
-        <View style={styles.ball}>
-          <View style={styles.ballInner} />
+      ) : (
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Pokédex</Text>
+            <Text style={styles.subtitle}>
+              見つけたポケモンをコレクションしよう
+            </Text>
+          </View>
+          <View style={styles.ball}>
+            <View style={styles.ballInner} />
+          </View>
         </View>
-      </View>
+      )}
 
       <View style={styles.searchBox}>
-        <MaterialIcons name="search" size={20} color="#7d90b1" />
+        <MaterialIcons name="search" size={20} color={iconColor} />
         <TextInput
           editable={false}
           placeholder="ポケモン名・図鑑番号で検索"
-          placeholderTextColor="#7d90b1"
+          placeholderTextColor={iconColor}
           style={styles.searchInput}
         />
-        <MaterialIcons name="tune" size={20} color="#7d90b1" />
+        <MaterialIcons name="tune" size={20} color={iconColor} />
       </View>
 
       <ScrollView
@@ -226,15 +283,22 @@ function ListHeader({ selectedType, onSelectType }: ListHeaderProps) {
 }
 
 type PokemonCardProps = {
+  isDark: boolean;
   item: PokemonListItem;
   isLeft: boolean;
   selectedType?: string;
 };
 
-function PokemonCard({ item, isLeft, selectedType }: PokemonCardProps) {
+function PokemonCard({ item, isDark, isLeft, selectedType }: PokemonCardProps) {
+  const styles = isDark ? darkStyles : lightStyles;
+  const typeBackground = isDark
+    ? DARK_TYPE_BG_BY_FILTER
+    : LIGHT_TYPE_BG_BY_FILTER;
+  const cardBackgrounds = isDark ? DARK_CARD_BG_COLORS : LIGHT_CARD_BG_COLORS;
+
   const backgroundColor = selectedType
-    ? (TYPE_BG_BY_FILTER[selectedType] ?? '#edf1f7')
-    : CARD_BG_COLORS[(Math.max(item.id, 1) - 1) % CARD_BG_COLORS.length];
+    ? (typeBackground[selectedType] ?? '#edf1f7')
+    : cardBackgrounds[(Math.max(item.id, 1) - 1) % cardBackgrounds.length];
 
   return (
     <View
@@ -276,7 +340,204 @@ function PokemonCard({ item, isLeft, selectedType }: PokemonCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const lightStyles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: '#fffdf7',
+  },
+  bgOrbTop: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: '#ffd8cc',
+    top: -120,
+    right: -110,
+    opacity: 0.6,
+  },
+  bgOrbBottom: {
+    position: 'absolute',
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#d8ecff',
+    bottom: -80,
+    left: -90,
+    opacity: 0.55,
+  },
+  content: {
+    paddingTop: 74,
+    paddingHorizontal: 18,
+    paddingBottom: 110,
+  },
+  centerLoader: {
+    marginTop: 120,
+  },
+  footerLoader: {
+    marginTop: 16,
+  },
+  inlineLoader: {
+    marginTop: 24,
+  },
+  errorText: {
+    marginTop: 120,
+    paddingHorizontal: 18,
+  },
+  inlineErrorText: {
+    marginTop: 24,
+    paddingHorizontal: 18,
+  },
+  headerPanel: {},
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    color: '#222326',
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#6f7580',
+  },
+  missionBadge: {
+    display: 'none',
+  },
+  missionBadgeLabel: {
+    display: 'none',
+  },
+  ball: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 2,
+    borderColor: '#1f242d',
+    backgroundColor: '#f15d5d',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ballInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#1f242d',
+  },
+  searchBox: {
+    marginTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#ebe3d6',
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#8a8f98',
+    fontSize: 14,
+  },
+  filterRow: {
+    marginTop: 14,
+    gap: 8,
+    paddingRight: 32,
+  },
+  filterScroll: {
+    marginHorizontal: -18,
+    paddingLeft: 16,
+    marginBottom: 12,
+  },
+  filterChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e1ddcf',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+  },
+  filterChipActive: {
+    borderColor: '#1f242d',
+    backgroundColor: '#1f242d',
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#666d78',
+  },
+  filterLabelActive: {
+    color: '#fff',
+  },
+  cardRow: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  cardCell: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  card: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardContent: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
+    minHeight: 186,
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    alignItems: 'center',
+  },
+  cardPressed: {
+    opacity: 0.92,
+  },
+  cardLeft: {
+    marginRight: 6,
+  },
+  cardRight: {
+    marginLeft: 6,
+  },
+  cardNo: {
+    alignSelf: 'flex-end',
+    fontSize: 11,
+    color: '#88909b',
+    textAlign: 'right',
+    fontWeight: '800',
+  },
+  avatar: {
+    marginTop: 10,
+    width: 84,
+    height: 84,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardName: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1f242d',
+    lineHeight: 22,
+  },
+  pokemonImage: {
+    width: '82%',
+    height: '82%',
+    alignSelf: 'center',
+  },
+});
+
+const darkStyles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#0b1020',

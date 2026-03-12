@@ -1,4 +1,5 @@
 import { PokemonDetailScreenView } from '@/components/features/pokedex/PokemonDetailScreenView';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePokemonDetailScreen } from '@/src/features/pokedex/usePokemonDetailScreen';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -8,6 +9,8 @@ const INITIAL_MOVE_COUNT = 4;
 const MOVE_PAGE_SIZE = 8;
 
 export default function PokemonDetailScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const router = useRouter();
   const { name } = useLocalSearchParams<{ name: string }>();
   const pokemonName = name ?? '';
@@ -20,7 +23,13 @@ export default function PokemonDetailScreen() {
 
   if (screenQ.isLoading) {
     return (
-      <View style={[styles.page, styles.center]}>
+      <View
+        style={[
+          styles.page,
+          isDark ? styles.pageDark : styles.pageLight,
+          styles.center,
+        ]}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
@@ -28,7 +37,13 @@ export default function PokemonDetailScreen() {
 
   if (screenQ.isError) {
     return (
-      <View style={[styles.page, styles.errorContainer]}>
+      <View
+        style={[
+          styles.page,
+          isDark ? styles.pageDark : styles.pageLight,
+          styles.errorContainer,
+        ]}
+      >
         <Text>error: {screenQ.error?.message ?? 'unknown'}</Text>
       </View>
     );
@@ -36,7 +51,13 @@ export default function PokemonDetailScreen() {
 
   if (!screenQ.data) {
     return (
-      <View style={[styles.page, styles.errorContainer]}>
+      <View
+        style={[
+          styles.page,
+          isDark ? styles.pageDark : styles.pageLight,
+          styles.errorContainer,
+        ]}
+      >
         <Text>データが見つかりませんでした。</Text>
       </View>
     );
@@ -60,6 +81,11 @@ export default function PokemonDetailScreen() {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
+  },
+  pageLight: {
+    backgroundColor: '#fffdf7',
+  },
+  pageDark: {
     backgroundColor: '#0b1020',
   },
   center: {
