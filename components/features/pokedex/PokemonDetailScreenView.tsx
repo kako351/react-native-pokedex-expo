@@ -55,13 +55,8 @@ function TypeChips({ items }: TypeChipsProps) {
   return (
     <View style={styles.typeRow}>
       {items.map((item) => (
-        <View
-          key={item.key}
-          style={[styles.typeChip, { backgroundColor: '#f5f7fb' }]}
-        >
-          <Text style={[styles.typeText, { color: '#5f6672' }]}>
-            {item.label}
-          </Text>
+        <View key={item.key} style={styles.typeChip}>
+          <Text style={styles.typeText}>{item.label}</Text>
         </View>
       ))}
     </View>
@@ -191,7 +186,7 @@ export function PokemonDetailScreenView({
   }));
 
   const toolbarAnimatedStyle = useAnimatedStyle(() => ({
-    backgroundColor: `rgba(255, 253, 247, ${interpolate(
+    backgroundColor: `rgba(10, 16, 30, ${interpolate(
       scrollOffset.value,
       [0, COLLAPSE_RANGE * 0.85],
       [0, 1],
@@ -258,6 +253,10 @@ export function PokemonDetailScreenView({
               <Text style={styles.name}>{displayName}</Text>
               <TypeChips items={types} />
             </View>
+            <View style={styles.heroBadge}>
+              <MaterialIcons name="sports-esports" size={14} color="#9af0ff" />
+              <Text style={styles.heroBadgeLabel}>BATTLE DATA</Text>
+            </View>
           </View>
 
           <View style={styles.heroImageStage}>
@@ -279,7 +278,7 @@ export function PokemonDetailScreenView({
           hitSlop={10}
           style={styles.toolbarBackButton}
         >
-          <MaterialIcons name="arrow-back" size={22} color="#2f3440" />
+          <MaterialIcons name="arrow-back" size={22} color="#e6f1ff" />
         </Pressable>
         <Animated.Text style={[styles.toolbarTitle, toolbarTitleAnimatedStyle]}>
           {displayName}
@@ -296,7 +295,7 @@ export function PokemonDetailScreenView({
         <InfoCard
           title="プロフィール"
           right={
-            <MaterialIcons name="favorite-border" size={20} color="#7c838f" />
+            <MaterialIcons name="favorite-border" size={20} color="#9ab0d2" />
           }
         >
           <Text style={styles.description}>{description}</Text>
@@ -324,13 +323,13 @@ export function PokemonDetailScreenView({
                     showGrid={false}
                     animated={false}
                     theme={{
-                      background: '#ffffff',
-                      gridColor: '#ededed',
-                      axisColor: '#ededed',
-                      areaFill: 'rgba(56, 189, 248, 0.24)',
-                      areaStroke: '#38bdf8',
+                      background: '#111c34',
+                      gridColor: '#2a3e61',
+                      axisColor: '#2a3e61',
+                      areaFill: 'rgba(46, 214, 255, 0.30)',
+                      areaStroke: '#2ed6ff',
                       glowColor: 'rgba(56, 189, 248, 0.0)',
-                      labelColor: '#5f6672',
+                      labelColor: '#9cb2d4',
                     }}
                   />
                 </View>
@@ -348,7 +347,7 @@ export function PokemonDetailScreenView({
                     <MaterialIcons
                       name="arrow-forward"
                       size={18}
-                      color="#8c92a0"
+                      color="#92a8cb"
                     />
                   ) : null}
                   <Text
@@ -385,27 +384,27 @@ export function PokemonDetailScreenView({
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#fffdf7',
+    backgroundColor: '#0b1020',
   },
   bgA: {
     position: 'absolute',
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: '#ffe4da',
+    backgroundColor: '#173864',
     top: -100,
     left: -85,
-    opacity: 0.7,
+    opacity: 0.72,
   },
   bgB: {
     position: 'absolute',
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: '#dce9ff',
+    backgroundColor: '#4a1f47',
     top: 200,
     right: -105,
-    opacity: 0.6,
+    opacity: 0.64,
   },
   content: {
     paddingTop: EXPANDED_HEADER_HEIGHT + 0,
@@ -427,9 +426,9 @@ const styles = StyleSheet.create({
   },
   hero: {
     borderRadius: 22,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#121a30',
     borderWidth: 1,
-    borderColor: '#efe7d8',
+    borderColor: '#2a3a59',
     paddingHorizontal: 14,
     paddingTop: 14,
     paddingBottom: 10,
@@ -444,14 +443,14 @@ const styles = StyleSheet.create({
   no: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#7c838f',
+    color: '#89a4cb',
   },
   name: {
     marginTop: 2,
     fontSize: 34,
     fontWeight: '900',
-    color: '#1f242d',
-    letterSpacing: 0.4,
+    color: '#e8f1ff',
+    letterSpacing: 0.6,
   },
   typeRow: {
     marginTop: 10,
@@ -460,24 +459,30 @@ const styles = StyleSheet.create({
   },
   typeChip: {
     borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#2b4469',
+    backgroundColor: '#13233e',
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   typeText: {
     fontSize: 12,
     fontWeight: '800',
+    color: '#b7cbeb',
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     borderRadius: 999,
-    backgroundColor: '#ef7544',
+    borderWidth: 1,
+    borderColor: '#2ed6ff',
+    backgroundColor: '#11253f',
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   heroBadgeLabel: {
-    color: '#fffcf5',
+    color: '#9af0ff',
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -486,6 +491,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
     height: 220,
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#2a3d61',
+    backgroundColor: 'rgba(16, 26, 48, 0.7)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -506,19 +514,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: '#efe7d8',
+    borderBottomColor: '#304669',
   },
   toolbarBackButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#2f4a70',
+    backgroundColor: '#121e36',
     alignItems: 'center',
     justifyContent: 'center',
   },
   toolbarTitle: {
     fontSize: 17,
     fontWeight: '900',
-    color: '#232732',
+    color: '#e9f2ff',
   },
   toolbarRightSpace: {
     width: 36,
@@ -526,9 +537,9 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     borderRadius: 18,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#121a30',
     borderWidth: 1,
-    borderColor: '#efe7d8',
+    borderColor: '#2a3a59',
     padding: 15,
     gap: 10,
   },
@@ -540,12 +551,12 @@ const styles = StyleSheet.create({
   blockTitle: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#232732',
+    color: '#e9f2ff',
   },
   description: {
     fontSize: 13,
     lineHeight: 21,
-    color: '#5d6470',
+    color: '#a4b8d7',
   },
   infoGrid: {
     flexDirection: 'row',
@@ -555,20 +566,22 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     width: '48%',
-    backgroundColor: '#f8f4eb',
+    backgroundColor: '#101a30',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#283a5a',
     paddingHorizontal: 10,
     paddingVertical: 9,
     gap: 3,
   },
   infoKey: {
     fontSize: 11,
-    color: '#838b99',
+    color: '#8fa7ca',
     fontWeight: '700',
   },
   infoValue: {
     fontSize: 15,
-    color: '#252936',
+    color: '#e3ecfb',
     fontWeight: '800',
   },
   statsWrap: {
@@ -580,11 +593,14 @@ const styles = StyleSheet.create({
   },
   radarSurface: {
     borderRadius: 12,
-    padding: 6,
+    backgroundColor: '#111c34',
+    borderWidth: 1,
+    borderColor: '#294061',
+    padding: 8,
   },
   radarFallbackText: {
     fontSize: 12,
-    color: '#7c838f',
+    color: '#8ea5c8',
   },
   statRow: {
     flexDirection: 'row',
@@ -594,7 +610,7 @@ const styles = StyleSheet.create({
   statLabel: {
     width: 60,
     fontSize: 12,
-    color: '#646b78',
+    color: '#94acd1',
     fontWeight: '700',
   },
   statValue: {
@@ -602,13 +618,13 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     fontSize: 13,
     fontWeight: '800',
-    color: '#252936',
+    color: '#e3ecfb',
   },
   barTrack: {
     flex: 1,
     height: 8,
     borderRadius: 999,
-    backgroundColor: '#ece7db',
+    backgroundColor: '#2b3d5f',
     overflow: 'hidden',
   },
   barFill: {
@@ -631,14 +647,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 12,
-    backgroundColor: '#f5f7fb',
-    color: '#5f6672',
+    borderWidth: 1,
+    borderColor: '#2c4469',
+    backgroundColor: '#13233f',
+    color: '#adc3e4',
     fontSize: 13,
     fontWeight: '700',
   },
   evoCurrent: {
-    backgroundColor: '#ffe9df',
-    color: '#9e4f2b',
+    borderColor: '#2ed6ff',
+    backgroundColor: '#163560',
+    color: '#dff8ff',
   },
   moveWrap: {
     flexDirection: 'row',
@@ -648,29 +667,29 @@ const styles = StyleSheet.create({
   moveChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#e3dde0',
-    backgroundColor: '#fff',
+    borderColor: '#2d4368',
+    backgroundColor: '#13223e',
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
   moveLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#5d6470',
+    color: '#adc3e4',
   },
   moreButton: {
     alignSelf: 'center',
     marginTop: 4,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#d9d1c6',
-    backgroundColor: '#fffaf2',
+    borderColor: '#2ed6ff',
+    backgroundColor: '#15355b',
     paddingHorizontal: 14,
     paddingVertical: 7,
   },
   moreButtonLabel: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#5d6470',
+    color: '#dcf9ff',
   },
 });

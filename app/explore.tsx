@@ -60,7 +60,7 @@ export default function PokemonDetailScreen() {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#fffdf7',
+    backgroundColor: '#0b1020',
   },
   center: {
     justifyContent: 'center',
