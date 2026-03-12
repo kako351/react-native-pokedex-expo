@@ -4,6 +4,7 @@ import {
   fetchPokemonDetail,
   fetchPokemonList,
   fetchPokemonSpecies,
+  fetchPokemonType,
 } from './client';
 
 const PER_PARGE: number = 30;
@@ -46,6 +47,14 @@ export const pokemonKeys = {
    */
   evolutionChain: (url: string) =>
     [...pokemonKeys.all, 'evolution-chain', url] as const,
+
+  /**
+   * タイプ情報取得用のクエリキーを生成します。
+   *
+   * @param typeName タイプ名
+   * @returns React Query 用のクエリキー
+   */
+  type: (typeName: string) => [...pokemonKeys.all, 'type', typeName] as const,
 };
 
 /**
@@ -54,16 +63,32 @@ export const pokemonKeys = {
  * @param limit 1ページあたりの取得件数
  * @returns 無限スクロール用のクエリ結果
  */
-export function usePokemonListInfinite(limit = PER_PARGE) {
+export function usePokemonListInfinite(limit = PER_PARGE, enabled = true) {
   return useInfiniteQuery({
     queryKey: pokemonKeys.list({ limit }),
     queryFn: ({ pageParam }) =>
       fetchPokemonList({ limit, offset: pageParam as number }),
+    enabled,
     initialPageParam: INITIAL_PAGE,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.next) return undefined;
       return allPages.length * limit;
     },
+  });
+}
+
+/**
+ * 指定したタイプ情報を取得するクエリフックです。
+ *
+ * @param typeName タイプ名
+ * @returns タイプ情報のクエリ結果
+ */
+export function usePokemonType(typeName?: string) {
+  return useQuery({
+    queryKey: typeName ? pokemonKeys.type(typeName) : pokemonKeys.all,
+    queryFn: () => fetchPokemonType(typeName!),
+    enabled: !!typeName,
+    staleTime: STALE_TIME,
   });
 }
 

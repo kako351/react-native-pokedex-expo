@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Expo: Debug in Expo Go",
+      "type": "expo",
+      "request": "attach"
+    },
+    {
+      "name": "Expo: Android",
+      "type": "expo",
+      "request": "launch",
+      "platform": "android"
+    },
+    {
+      "name": "Expo: iOS",
+      "type": "expo",
+      "request": "launch",
+      "platform": "ios"
+    },
+    {
+      "name": "Expo: Web",
+      "type": "expo",
+      "request": "launch",
+      "platform": "web"
+    }
+  ]
+}

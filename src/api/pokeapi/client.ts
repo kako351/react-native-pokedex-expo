@@ -12,6 +12,7 @@ import { pokeApiEndpoints } from './endpoints';
 import { EvolutionChainSchema } from './schema/evolutionChain';
 import { AbilitySchema, type Ability } from './schema/ability';
 import { MoveSchema, type Move } from './schema/move';
+import { PokemonTypeSchema, type PokemonType } from './schema/pokemontype';
 
 /**
  * GET /pokemon
@@ -69,4 +70,14 @@ export async function fetchAbility(url: string): Promise<Ability> {
 export async function fetchMove(url: string): Promise<Move> {
   const res = await http.get(url);
   return MoveSchema.parse(res.data);
+}
+
+/**
+ * GET /type/{id or name}
+ */
+export async function fetchPokemonType(typeName: string): Promise<PokemonType> {
+  const res = await http.get(
+    `${pokeApiEndpoints.type}/${encodeURIComponent(typeName)}`,
+  );
+  return PokemonTypeSchema.parse(res.data);
 }

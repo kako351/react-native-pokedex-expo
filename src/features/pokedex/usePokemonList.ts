@@ -1,6 +1,7 @@
 import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
 import {
   usePokemonListInfinite,
+  usePokemonType,
   useSpeciesQueries,
 } from '@/src/api/pokeapi/queries';
 import { useMemo } from 'react';
@@ -27,12 +28,23 @@ const extractIdFromUrl = (url: string): number => {
   return Number(m[1]);
 };
 
-export function usePokemonList(perPage = PER_PARGE) {
-  const q = usePokemonListInfinite(perPage);
-  const raw = useMemo(
+const noOpFetchNextPage = async () => undefined;
+
+export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
+  const isTypeFilterActive = !!selectedType;
+  const q = usePokemonListInfinite(perPage, !isTypeFilterActive);
+  const typeQ = usePokemonType(selectedType);
+  const rawFromList = useMemo(
     () => q.data?.pages.flatMap((p) => p.results) ?? [],
     [q.data?.pages],
   );
+  const rawFromType = useMemo(() => {
+    if (!typeQ.data) return [];
+    return typeQ.data.pokemon
+      .map((entry) => entry.pokemon)
+      .sort((a, b) => extractIdFromUrl(a.url) - extractIdFromUrl(b.url));
+  }, [typeQ.data]);
+  const raw = isTypeFilterActive ? rawFromType : rawFromList;
   const names = raw.map((r) => r.name);
 
   const speciesQueries = useSpeciesQueries(names);
@@ -54,12 +66,12 @@ export function usePokemonList(perPage = PER_PARGE) {
 
   return {
     items,
-    isLoading: q.isLoading,
-    isError: q.isError,
-    error: q.error,
-    fetchNextPage: q.fetchNextPage,
-    hasNextPage: q.hasNextPage,
-    isFetchingNextPage: q.isFetchingNextPage,
-    refetch: q.refetch,
+    isLoading: isTypeFilterActive ? typeQ.isLoading : q.isLoading,
+    isError: isTypeFilterActive ? typeQ.isError : q.isError,
+    error: isTypeFilterActive ? typeQ.error : q.error,
+    fetchNextPage: isTypeFilterActive ? noOpFetchNextPage : q.fetchNextPage,
+    hasNextPage: isTypeFilterActive ? false : q.hasNextPage,
+    isFetchingNextPage: isTypeFilterActive ? false : q.isFetchingNextPage,
+    refetch: isTypeFilterActive ? typeQ.refetch : q.refetch,
   };
 }
