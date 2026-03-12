@@ -17,8 +17,8 @@ Expo + React Native + Expo Router で構築した、PokeAPI ベースの Pokéde
 
 ## スクリーンショット
 
-| 一覧画面 | 詳細画面 |
-| --- | --- |
+| 一覧画面                                                              | 詳細画面                                                                 |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | <img src="docs/images/list.png" alt="ポケモン一覧画面" width="300" /> | <img src="docs/images/explore.png" alt="ポケモン詳細画面" width="300" /> |
 
 ## 技術スタック
@@ -60,17 +60,6 @@ npm run lint:fix
 npm run format
 ```
 
-## API 設定
-
-`app.config.ts` の `expo.extra.apiBaseUrl` から API ベース URL を参照します。  
-未指定時のデフォルトは `https://pokeapi.co/api/v2` です。
-
-例:
-
-```bash
-API_BASE_URL=https://pokeapi.co/api/v2 npm run start
-```
-
 ## ディレクトリ構成
 
 ```text
@@ -84,8 +73,3 @@ src/
   features/pokedex/          # 画面用のカスタムフック
   config/env.ts              # 環境変数の参照
 ```
-
-## 備考
-
-- 現在、専用テストフレームワークは未導入です。
-- 変更時は最低限 `lint` / `type-check` / 手動確認（iOS・Android・Web いずれか）を推奨します。
