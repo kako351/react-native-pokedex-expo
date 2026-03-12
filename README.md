@@ -1,50 +1,91 @@
-# Welcome to your Expo app 👋
+# react-native-pokedex-expo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo + React Native + Expo Router で構築した、PokeAPI ベースの Pokédex アプリです。  
+ポケモン一覧表示、タイプ絞り込み、詳細表示（種族説明・能力・進化・技・種族値）に対応しています。
 
-## Get started
+## 主な機能
 
-1. Install dependencies
+- ポケモン一覧の無限スクロール表示
+- タイプ別フィルター（全18タイプ）
+- ポケモン詳細表示
+  - 日本語名
+  - 図鑑説明
+  - 高さ / 重さ / 特性 / 経験値
+  - 種族値（レーダー + バー）
+  - 進化系統
+  - 技一覧（段階的に追加表示）
 
-   ```bash
-   npm install
-   ```
+## スクリーンショット
 
-2. Start the app
+| 一覧画面 | 詳細画面 |
+| --- | --- |
+| <img src="docs/images/list.png" alt="ポケモン一覧画面" width="300" /> | <img src="docs/images/explore.png" alt="ポケモン詳細画面" width="300" /> |
 
-   ```bash
-   npx expo start
-   ```
+## 技術スタック
 
-In the output, you'll find options to open the app in a
+- Expo SDK 55
+- React Native 0.83
+- Expo Router
+- TanStack Query
+- Axios
+- Zod
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## セットアップ
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 開発コマンド
 
-## Learn more
+```bash
+npm run start      # Expo 開発サーバー
+npm run ios        # iOS 実行
+npm run android    # Android 実行
+npm run web        # Web 実行
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## 品質チェック
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run lint
+npm run type-check
+npm run format:check
+```
 
-## Join the community
+自動修正:
 
-Join our community of developers creating universal apps.
+```bash
+npm run lint:fix
+npm run format
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## API 設定
+
+`app.config.ts` の `expo.extra.apiBaseUrl` から API ベース URL を参照します。  
+未指定時のデフォルトは `https://pokeapi.co/api/v2` です。
+
+例:
+
+```bash
+API_BASE_URL=https://pokeapi.co/api/v2 npm run start
+```
+
+## ディレクトリ構成
+
+```text
+app/                         # Expo Router の画面
+  (tabs)/index.tsx           # ポケモン一覧
+  explore.tsx                # ポケモン詳細
+components/                  # UI コンポーネント
+  features/pokedex/          # 図鑑画面の View
+src/
+  api/pokeapi/               # PokeAPI クライアント・クエリ・スキーマ
+  features/pokedex/          # 画面用のカスタムフック
+  config/env.ts              # 環境変数の参照
+```
+
+## 備考
+
+- 現在、専用テストフレームワークは未導入です。
+- 変更時は最低限 `lint` / `type-check` / 手動確認（iOS・Android・Web いずれか）を推奨します。
