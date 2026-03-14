@@ -19,13 +19,15 @@ Keep feature logic close to its domain (for example, PokeAPI schemas under `src/
 
 - `npm run start`: Start Expo dev server.
 - `npm run ios` / `npm run android` / `npm run web`: Launch target platform.
+- `npm run test`: Run unit tests with Jest.
+- `npm run test:watch`: Run unit tests in watch mode.
 - `npm run lint`: Run Expo ESLint config checks.
 - `npm run lint:fix`: Auto-fix lint issues where possible.
 - `npm run type-check`: Run TypeScript checks without emitting output.
 - `npm run format:check`: Verify Prettier formatting.
 - `npm run format`: Apply Prettier formatting.
 
-Run `npm run lint && npm run type-check && npm run format:check` before opening a PR.
+Run `npm run lint && npm run type-check && npm run test && npm run format:check` before opening a PR.
 
 ## Coding Style & Naming Conventions
 
@@ -41,14 +43,16 @@ Prefer explicit `zod` schemas and inferred types (`z.infer`) for API payloads.
 
 ## Testing Guidelines
 
-There is currently no dedicated automated test framework configured in this repository.  
-Until tests are introduced, use this minimum validation set:
+This repository uses Jest (`jest-expo`) for unit tests.
+
+Use this minimum validation set:
 
 - `npm run lint`
 - `npm run type-check`
-- manual smoke test on at least one target (`ios`, `android`, or `web`)
+- `npm run test`
+- Manual smoke test on at least one target (`ios`, `android`, or `web`)
 
-When adding tests in the future, colocate them near features (for example `src/**/__tests__/` or `*.test.ts`).
+When adding tests, colocate them near features (for example `src/**/__tests__/` or `*.test.ts`).
 
 ## Commit & Pull Request Guidelines
 
