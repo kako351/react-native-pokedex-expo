@@ -12,9 +12,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import {
+  filterPokemonListByKeyword,
+  normalizePokemonSearchKeyword,
+} from '@/src/features/pokedex/pokemonSearch';
 import {
   type PokemonListItem,
   usePokemonList,
@@ -119,6 +123,7 @@ export default function PokedexScreen() {
   const [selectedType, setSelectedType] = useState<string | undefined>(
     undefined,
   );
+  const [searchKeyword, setSearchKeyword] = useState('');
   const {
     items,
     isLoading,
@@ -131,6 +136,17 @@ export default function PokedexScreen() {
   const isTypeFiltering = !!selectedType;
   const showInlineListLoading = isTypeFiltering && isLoading;
   const showInlineListError = isTypeFiltering && isError;
+  const normalizedKeyword = normalizePokemonSearchKeyword(searchKeyword);
+
+  const filteredItems = useMemo(() => {
+    return filterPokemonListByKeyword(items, searchKeyword);
+  }, [items, searchKeyword]);
+
+  const showSearchEmpty =
+    !isLoading &&
+    !isError &&
+    normalizedKeyword.length > 0 &&
+    filteredItems.length === 0;
 
   return (
     <View style={styles.page}>
@@ -146,15 +162,17 @@ export default function PokedexScreen() {
         </Text>
       ) : (
         <FlatList
-          data={items}
+          data={filteredItems}
           numColumns={2}
-          extraData={selectedType}
+          extraData={{ selectedType, searchKeyword }}
           keyExtractor={(item) => item.id.toString()}
           ListHeaderComponent={
             <ListHeader
               isDark={isDark}
               selectedType={selectedType}
               onSelectType={setSelectedType}
+              searchKeyword={searchKeyword}
+              onChangeSearchKeyword={setSearchKeyword}
             />
           }
           contentContainerStyle={styles.content}
@@ -179,6 +197,10 @@ export default function PokedexScreen() {
                 エラーが発生しました:{' '}
                 {error instanceof Error ? error.message : 'unknown'}
               </Text>
+            ) : showSearchEmpty ? (
+              <Text style={styles.inlineErrorText}>
+                {`「${searchKeyword.trim()}」に一致するポケモンが見つかりませんでした。`}
+              </Text>
             ) : null
           }
           renderItem={({ item, index }) => (
@@ -199,9 +221,17 @@ type ListHeaderProps = {
   isDark: boolean;
   selectedType?: string;
   onSelectType: (type?: string) => void;
+  searchKeyword: string;
+  onChangeSearchKeyword: (value: string) => void;
 };
 
-function ListHeader({ isDark, selectedType, onSelectType }: ListHeaderProps) {
+function ListHeader({
+  isDark,
+  selectedType,
+  onSelectType,
+  searchKeyword,
+  onChangeSearchKeyword,
+}: ListHeaderProps) {
   const styles = isDark ? darkStyles : lightStyles;
   const iconColor = isDark ? '#7d90b1' : '#8a8f98';
 
@@ -237,10 +267,15 @@ function ListHeader({ isDark, selectedType, onSelectType }: ListHeaderProps) {
       <View style={styles.searchBox}>
         <MaterialIcons name="search" size={20} color={iconColor} />
         <TextInput
-          editable={false}
+          value={searchKeyword}
+          onChangeText={onChangeSearchKeyword}
           placeholder="ポケモン名・図鑑番号で検索"
           placeholderTextColor={iconColor}
           style={styles.searchInput}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
         />
         <MaterialIcons name="tune" size={20} color={iconColor} />
       </View>
