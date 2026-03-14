@@ -30,7 +30,7 @@ export default function PokemonDetailScreen() {
           styles.center,
         ]}
       >
-        <ActivityIndicator size="large" />
+        <ActivityIndicator testID="pokemon-detail-loading" size="large" />
       </View>
     );
   }

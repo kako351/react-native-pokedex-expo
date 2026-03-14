@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Pokédex'
+- assertVisible:
+    id: 'pokemon-card-bulbasaur'
+- tapOn:
+    id: 'pokemon-card-bulbasaur'
+- assertVisible:
+    id: 'pokemon-detail-title'
+- tapOn:
+    id: 'pokemon-detail-back'
+- assertVisible: 'Pokédex'

@@ -265,7 +265,9 @@ export function PokemonDetailScreenView({
           <View style={styles.heroHeader}>
             <View>
               <Text style={styles.no}>{displayNo}</Text>
-              <Text style={styles.name}>{displayName}</Text>
+              <Text testID="pokemon-detail-title" style={styles.name}>
+                {displayName}
+              </Text>
               <TypeChips items={types} styles={styles} />
             </View>
             {isDark ? (
@@ -295,6 +297,7 @@ export function PokemonDetailScreenView({
 
       <Animated.View style={[styles.toolbar, toolbarAnimatedStyle]}>
         <Pressable
+          testID="pokemon-detail-back"
           onPress={onBack}
           hitSlop={10}
           style={styles.toolbarBackButton}
@@ -407,7 +410,11 @@ export function PokemonDetailScreenView({
         <InfoCard title="覚えるわざ" styles={styles}>
           <MoveChips moves={moveList} styles={styles} />
           {canShowMoreMoves ? (
-            <Pressable onPress={onPressMoreMoves} style={styles.moreButton}>
+            <Pressable
+              testID="pokemon-detail-more-moves"
+              onPress={onPressMoreMoves}
+              style={styles.moreButton}
+            >
               <Text style={styles.moreButtonLabel}>もっと見る</Text>
             </Pressable>
           ) : null}

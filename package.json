@@ -14,7 +14,9 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "format:check": "prettier . --check",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "e2e:maestro:android": "maestro test .maestro/flows --env APP_ID=com.kako351.pokedex.android",
+    "e2e:maestro:ios": "maestro test .maestro/flows --env APP_ID=com.kako351.pokedex.ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

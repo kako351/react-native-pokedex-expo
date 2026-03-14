@@ -267,6 +267,7 @@ function ListHeader({
       <View style={styles.searchBox}>
         <MaterialIcons name="search" size={20} color={iconColor} />
         <TextInput
+          testID="pokemon-search-input"
           value={searchKeyword}
           onChangeText={onChangeSearchKeyword}
           placeholder="ポケモン名・図鑑番号で検索"
@@ -348,6 +349,7 @@ function PokemonCard({ item, isDark, isLeft, selectedType }: PokemonCardProps) {
         asChild
       >
         <Pressable
+          testID={`pokemon-card-${item.name}`}
           android_ripple={{
             color: 'rgba(31, 36, 45, 0.16)',
             foreground: true,

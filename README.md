@@ -68,6 +68,17 @@ npm run lint:fix
 npm run format
 ```
 
+## E2E テスト（Maestro）
+
+Maestro CLI をインストール済みの環境で実行できます。
+
+```bash
+npm run e2e:maestro:android  # Android アプリを対象
+npm run e2e:maestro:ios      # iOS アプリを対象
+```
+
+フロー定義は `.maestro/flows/` 配下に配置しています。
+
 ## ディレクトリ構成
 
 ```text
