@@ -1,8 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import {
@@ -114,23 +114,6 @@ const DARK_TYPE_BG_BY_FILTER: Record<string, string> = {
   fairy: '#4a2d43',
 };
 
-// PERF-ISSUE: 毎レンダリングで重い同期処理を実行するユーティリティ
-// Android: メインスレッド(UIスレッド)でのブロッキング処理に相当
-function heavySort(items: PokemonListItem[]): PokemonListItem[] {
-  // O(n^2) のバブルソート — 不必要に重い
-  const arr = [...items];
-  for (let i = 0; i < arr.length; i++) {
-    for (let j = 0; j < arr.length - i - 1; j++) {
-      if (arr[j].id > arr[j + 1].id) {
-        const tmp = arr[j];
-        arr[j] = arr[j + 1];
-        arr[j + 1] = tmp;
-      }
-    }
-  }
-  return arr;
-}
-
 export default function PokedexScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -140,15 +123,6 @@ export default function PokedexScreen() {
     undefined,
   );
   const [searchKeyword, setSearchKeyword] = useState('');
-
-  // PERF-ISSUE: 不要なstateで毎秒再レンダリングを発生させる
-  // Android: Handler.postDelayed で毎秒 invalidate() を呼ぶのと同等
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
-
   const {
     items,
     isLoading,
@@ -163,17 +137,15 @@ export default function PokedexScreen() {
   const showInlineListError = isTypeFiltering && isError;
   const normalizedKeyword = normalizePokemonSearchKeyword(searchKeyword);
 
-  // PERF-ISSUE: useMemo を除去 — 毎レンダリングでフィルタリング実行
-  const filteredItems = filterPokemonListByKeyword(items, searchKeyword);
-
-  // PERF-ISSUE: 毎レンダリングで O(n^2) ソートを実行
-  const sortedItems = heavySort(filteredItems);
+  const filteredItems = useMemo(() => {
+    return filterPokemonListByKeyword(items, searchKeyword);
+  }, [items, searchKeyword]);
 
   const showSearchEmpty =
     !isLoading &&
     !isError &&
     normalizedKeyword.length > 0 &&
-    sortedItems.length === 0;
+    filteredItems.length === 0;
 
   return (
     <View style={styles.page}>
@@ -188,14 +160,10 @@ export default function PokedexScreen() {
           {error instanceof Error ? error.message : 'unknown'}
         </Text>
       ) : (
-        // PERF-ISSUE: FlatList → ScrollView + map
-        // Android: RecyclerView → LinearLayout(ScrollView)に相当
-        // ビューリサイクリングなし、全アイテムが一括マウント
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           onScroll={(e) => {
-            // PERF-ISSUE: onScroll の度に新しいオブジェクトを毎回アロケート
             const { layoutMeasurement, contentOffset, contentSize } =
               e.nativeEvent;
             const isNearEnd =
@@ -205,7 +173,7 @@ export default function PokedexScreen() {
               fetchNextPage();
             }
           }}
-          scrollEventThrottle={1} // PERF-ISSUE: 全スクロールイベントを受信 (16 → 1)
+          scrollEventThrottle={16}
         >
           <ListHeader
             isDark={isDark}
@@ -214,7 +182,6 @@ export default function PokedexScreen() {
             searchKeyword={searchKeyword}
             onChangeSearchKeyword={setSearchKeyword}
           />
-
           {showInlineListLoading ? (
             <ActivityIndicator size="large" style={styles.inlineLoader} />
           ) : showInlineListError ? (
@@ -227,9 +194,8 @@ export default function PokedexScreen() {
               {`「${searchKeyword.trim()}」に一致するポケモンが見つかりませんでした。`}
             </Text>
           ) : (
-            // PERF-ISSUE: map で全アイテムを一括レンダリング（仮想化なし）
             <View style={styles.gridContainer}>
-              {sortedItems.map((item, index) => (
+              {filteredItems.map((item, index) => (
                 <PokemonCard
                   key={item.id.toString()}
                   isDark={isDark}
@@ -240,7 +206,6 @@ export default function PokedexScreen() {
               ))}
             </View>
           )}
-
           {isFetchingNextPage ? (
             <ActivityIndicator size="large" style={styles.footerLoader} />
           ) : null}
@@ -360,23 +325,14 @@ type PokemonCardProps = {
 
 function PokemonCard({ item, isDark, isLeft, selectedType }: PokemonCardProps) {
   const styles = isDark ? darkStyles : lightStyles;
-
-  // PERF-ISSUE: 毎レンダリングで新しいオブジェクトを生成
-  // Android: onBindViewHolder 内で毎回オブジェクト生成するアンチパターン
   const typeBackground = isDark
-    ? { ...DARK_TYPE_BG_BY_FILTER }
-    : { ...LIGHT_TYPE_BG_BY_FILTER };
-  const cardBackgrounds = isDark
-    ? [...DARK_CARD_BG_COLORS]
-    : [...LIGHT_CARD_BG_COLORS];
+    ? DARK_TYPE_BG_BY_FILTER
+    : LIGHT_TYPE_BG_BY_FILTER;
+  const cardBackgrounds = isDark ? DARK_CARD_BG_COLORS : LIGHT_CARD_BG_COLORS;
 
   const backgroundColor = selectedType
     ? (typeBackground[selectedType] ?? '#edf1f7')
     : cardBackgrounds[(Math.max(item.id, 1) - 1) % cardBackgrounds.length];
-
-  // PERF-ISSUE: 毎レンダリングでDateオブジェクトを生成して不要な計算
-  const _now = new Date().toISOString();
-  console.log(`[PokemonCard] render: ${item.name} at ${_now}`);
 
   return (
     <View
@@ -396,18 +352,16 @@ function PokemonCard({ item, isDark, isLeft, selectedType }: PokemonCardProps) {
             color: 'rgba(31, 36, 45, 0.16)',
             foreground: true,
           }}
-          // PERF-ISSUE: インライン関数で毎レンダリング新しい参照生成
           style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
         >
           <View style={styles.cardContent}>
             <Text style={styles.cardNo}>{item.displayNo}</Text>
             <View style={styles.avatar}>
-              {/* PERF-ISSUE: expo-image → React Native Image
-                  Android: Glide/Coil → 標準 ImageView に相当
-                  キャッシュ最適化・プログレッシブロードなし */}
               <Image
                 source={{ uri: item.imageUrl }}
-                resizeMode="contain"
+                contentFit="contain"
+                contentPosition="center"
+                transition={150}
                 style={styles.pokemonImage}
               />
             </View>

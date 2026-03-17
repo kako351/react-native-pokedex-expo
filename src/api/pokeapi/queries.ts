@@ -9,9 +9,7 @@ import {
 
 const PER_PARGE: number = 30;
 const INITIAL_PAGE: number = 0;
-
-// PERF-ISSUE: staleTime を 0 に変更 — 個別クエリのキャッシュも無効化
-const STALE_TIME: number = 0;
+const STALE_TIME: number = 24 * 60 * 60 * 1000;
 
 export const pokemonKeys = {
   all: ['pokemon'] as const,
