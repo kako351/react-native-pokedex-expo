@@ -4,7 +4,7 @@ import {
   usePokemonType,
   useSpeciesQueries,
 } from '@/src/api/pokeapi/queries';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export type PokemonListItem = {
   id: number;
@@ -40,20 +40,21 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
 
   const q = usePokemonListInfinite(perPage, !isTypeFilterActive);
   const typeQ = usePokemonType(selectedType);
-  const rawFromList = useMemo(
-    () => q.data?.pages.flatMap((p) => p.results) ?? [],
-    [q.data?.pages],
-  );
-  const rawFromTypeAll = useMemo(() => {
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングで flatMap 実行
+  const rawFromList = q.data?.pages.flatMap((p) => p.results) ?? [];
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングでソート実行
+  const rawFromTypeAll = (() => {
     if (!typeQ.data) return [];
     return typeQ.data.pokemon
       .map((entry) => entry.pokemon)
       .sort((a, b) => extractIdFromUrl(a.url) - extractIdFromUrl(b.url));
-  }, [typeQ.data]);
-  const rawFromType = useMemo(
-    () => rawFromTypeAll.slice(0, typePage * perPage),
-    [rawFromTypeAll, typePage, perPage],
-  );
+  })();
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングで slice 実行
+  const rawFromType = rawFromTypeAll.slice(0, typePage * perPage);
+
   const hasNextTypePage = rawFromType.length < rawFromTypeAll.length;
   const raw = isTypeFilterActive ? rawFromType : rawFromList;
   const names = raw.map((r) => r.name);
@@ -69,26 +70,26 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
     }
   }, [isTypeFetchingNextPage, isSpeciesLoading]);
 
-  const fetchNextTypePage = useCallback(async () => {
+  // PERF-ISSUE: useCallback を除去 — 毎レンダリングで新しい関数参照生成
+  const fetchNextTypePage = async () => {
     if (!hasNextTypePage || isTypeFetchingNextPage) return;
     setIsTypeFetchingNextPage(true);
     setTypePage((prev) => prev + 1);
-  }, [hasNextTypePage, isTypeFetchingNextPage]);
+  };
 
-  const items: PokemonListItem[] = useMemo(() => {
-    return raw.map((p, idx) => {
-      const id = extractIdFromUrl(p.url);
-      const species = speciesQueries[idx]?.data;
-      const displayName = species ? pickJapaneseName(species) : p.name;
-      return {
-        id,
-        name: p.name,
-        displayName: displayName,
-        displayNo: padNo(id),
-        imageUrl: artworkUrl(id),
-      };
-    });
-  }, [raw, speciesQueries]);
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングで items 変換を実行
+  const items: PokemonListItem[] = raw.map((p, idx) => {
+    const id = extractIdFromUrl(p.url);
+    const species = speciesQueries[idx]?.data;
+    const displayName = species ? pickJapaneseName(species) : p.name;
+    return {
+      id,
+      name: p.name,
+      displayName: displayName,
+      displayNo: padNo(id),
+      imageUrl: artworkUrl(id),
+    };
+  });
 
   return {
     items,

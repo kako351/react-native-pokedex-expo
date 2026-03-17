@@ -16,7 +16,6 @@ import { EvolutionChain } from '@/src/api/pokeapi/schema/evolutionChain';
 import { PokemonDetail } from '@/src/api/pokeapi/schema/pokemondetail';
 import { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
 import { useQueries } from '@tanstack/react-query';
-import { useMemo } from 'react';
 import { toJapaneseTypeLabel } from './pokemonTypeLabel';
 
 const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
@@ -105,10 +104,12 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
   const speciesQ = usePokemonSpecies(safeName);
   const evolutionUrl = speciesQ.data?.evolution_chain?.url;
   const evoQ = useEvolutionChain(evolutionUrl);
-  const evolutionRawNames = useMemo(
-    () => (evoQ.data ? flattenEvolutionChainNames(evoQ.data) : []),
-    [evoQ.data],
-  );
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングでツリー走査
+  const evolutionRawNames = evoQ.data
+    ? flattenEvolutionChainNames(evoQ.data)
+    : [];
+
   const evolutionSpeciesQueries = useQueries({
     queries: evolutionRawNames.map((evoName) => ({
       queryKey: ['pokemon', 'species', evoName] as const,
@@ -116,14 +117,14 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
       staleTime: 24 * 60 * 60 * 1000,
     })),
   });
-  const abilityResources = useMemo(
-    () =>
-      detailQ.data?.abilities
-        .slice()
-        .sort(sortBySlot)
-        .map((a) => a.ability) ?? [],
-    [detailQ.data],
-  );
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングでソート・マップ
+  const abilityResources =
+    detailQ.data?.abilities
+      .slice()
+      .sort(sortBySlot)
+      .map((a) => a.ability) ?? [];
+
   const abilityQueries = useQueries({
     queries: abilityResources.map((ability) => ({
       queryKey: ['pokemon', 'ability', ability.url] as const,
@@ -131,10 +132,11 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
       staleTime: 24 * 60 * 60 * 1000,
     })),
   });
-  const moveResources = useMemo(
-    () => detailQ.data?.moves.slice(0, moveLimit).map((m) => m.move) ?? [],
-    [detailQ.data, moveLimit],
-  );
+
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングで slice・map
+  const moveResources =
+    detailQ.data?.moves.slice(0, moveLimit).map((m) => m.move) ?? [];
+
   const moveQueries = useQueries({
     queries: moveResources.map((move) => ({
       queryKey: ['pokemon', 'move', move.url] as const,
@@ -173,7 +175,8 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
     abilityError ??
     moveError) as Error | null;
 
-  const data: PokemonDetailScreenData | null = useMemo(() => {
+  // PERF-ISSUE: useMemo を除去 — 毎レンダリングで全データ再計算
+  const data: PokemonDetailScreenData | null = (() => {
     const p: PokemonDetail | undefined = detailQ.data;
     const s: PokemonSpecies | undefined = speciesQ.data;
     if (!p || !s) return null;
@@ -222,6 +225,11 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
         : move.name;
     });
 
+    // PERF-ISSUE: JSON.stringify で毎回シリアライズ（不要なCPU負荷）
+    console.log(
+      `[DetailScreen] data built: ${JSON.stringify({ id: p.id, name: s.name })}`,
+    );
+
     return {
       displayNo: padNo(p.id),
       displayName: pickJapaneseName(s),
@@ -242,16 +250,7 @@ export function usePokemonDetailScreen(name: string, moveLimit = 4) {
       moveTotalCount: p.moves.length,
       evolutionNames,
     };
-  }, [
-    detailQ.data,
-    speciesQ.data,
-    evolutionRawNames,
-    evolutionSpeciesQueries,
-    abilityResources,
-    abilityQueries,
-    moveResources,
-    moveQueries,
-  ]);
+  })();
 
   return {
     isLoading,

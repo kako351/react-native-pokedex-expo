@@ -18,14 +18,18 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // 肥大化しそうな場合はProviders作成を検討する
+  // PERF-ISSUE: キャッシュ無効化 — 毎回APIリクエストを発行
+  // Android: OkHttp の Cache-Control: no-cache に相当
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
             retry: 1,
-            staleTime: 30_000,
+            staleTime: 0,
+            gcTime: 0,
+            refetchOnMount: 'always',
+            refetchOnWindowFocus: true,
           },
         },
       }),

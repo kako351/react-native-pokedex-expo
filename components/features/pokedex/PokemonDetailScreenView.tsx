@@ -1,9 +1,9 @@
 import type { PokemonDetailScreenData } from '@/src/features/pokedex/usePokemonDetailScreen';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { GameRadar } from '@kako351/react-native-game-radar';
-import { Image } from 'expo-image';
 import { Component, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+// PERF-ISSUE: expo-image → React Native Image (キャッシュ最適化なし)
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -283,11 +283,11 @@ export function PokemonDetailScreenView({
           </View>
 
           <View style={styles.heroImageStage}>
+            {/* PERF-ISSUE: expo-image → Image、キャッシュ・トランジションなし */}
             {heroImageUri ? (
               <Image
                 source={{ uri: heroImageUri }}
-                contentFit="contain"
-                transition={200}
+                resizeMode="contain"
                 style={styles.heroImage}
               />
             ) : null}
@@ -318,7 +318,7 @@ export function PokemonDetailScreenView({
         ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
+        scrollEventThrottle={1} /* PERF-ISSUE: 16 → 1、全スクロールイベント受信 */
       >
         <InfoCard
           title="プロフィール"
