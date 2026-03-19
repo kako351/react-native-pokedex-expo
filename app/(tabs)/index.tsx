@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -160,56 +161,57 @@ export default function PokedexScreen() {
           {error instanceof Error ? error.message : 'unknown'}
         </Text>
       ) : (
-        <ScrollView
+        <FlatList
+          data={filteredItems}
+          numColumns={2}
+          extraData={{ selectedType, searchKeyword }}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            <ListHeader
+              isDark={isDark}
+              selectedType={selectedType}
+              onSelectType={setSelectedType}
+              searchKeyword={searchKeyword}
+              onChangeSearchKeyword={setSearchKeyword}
+            />
+          }
           contentContainerStyle={styles.content}
+          columnWrapperStyle={styles.cardRow}
           showsVerticalScrollIndicator={false}
-          onScroll={(e) => {
-            const { layoutMeasurement, contentOffset, contentSize } =
-              e.nativeEvent;
-            const isNearEnd =
-              layoutMeasurement.height + contentOffset.y >=
-              contentSize.height - 500;
-            if (isNearEnd && hasNextPage && !isFetchingNextPage) {
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
               fetchNextPage();
             }
           }}
-          scrollEventThrottle={16}
-        >
-          <ListHeader
-            isDark={isDark}
-            selectedType={selectedType}
-            onSelectType={setSelectedType}
-            searchKeyword={searchKeyword}
-            onChangeSearchKeyword={setSearchKeyword}
-          />
-          {showInlineListLoading ? (
-            <ActivityIndicator size="large" style={styles.inlineLoader} />
-          ) : showInlineListError ? (
-            <Text style={styles.inlineErrorText}>
-              エラーが発生しました:{' '}
-              {error instanceof Error ? error.message : 'unknown'}
-            </Text>
-          ) : showSearchEmpty ? (
-            <Text style={styles.inlineErrorText}>
-              {`「${searchKeyword.trim()}」に一致するポケモンが見つかりませんでした。`}
-            </Text>
-          ) : (
-            <View style={styles.gridContainer}>
-              {filteredItems.map((item, index) => (
-                <PokemonCard
-                  key={item.id.toString()}
-                  isDark={isDark}
-                  item={item}
-                  isLeft={index % 2 === 0}
-                  selectedType={selectedType}
-                />
-              ))}
-            </View>
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator size="large" style={styles.footerLoader} />
+            ) : null
+          }
+          ListEmptyComponent={
+            showInlineListLoading ? (
+              <ActivityIndicator size="large" style={styles.inlineLoader} />
+            ) : showInlineListError ? (
+              <Text style={styles.inlineErrorText}>
+                エラーが発生しました:{' '}
+                {error instanceof Error ? error.message : 'unknown'}
+              </Text>
+            ) : showSearchEmpty ? (
+              <Text style={styles.inlineErrorText}>
+                {`「${searchKeyword.trim()}」に一致するポケモンが見つかりませんでした。`}
+              </Text>
+            ) : null
+          }
+          renderItem={({ item, index }) => (
+            <PokemonCard
+              isDark={isDark}
+              item={item}
+              isLeft={index % 2 === 0}
+              selectedType={selectedType}
+            />
           )}
-          {isFetchingNextPage ? (
-            <ActivityIndicator size="large" style={styles.footerLoader} />
-          ) : null}
-        </ScrollView>
+        />
       )}
     </View>
   );
@@ -510,17 +512,14 @@ const lightStyles = StyleSheet.create({
   filterLabelActive: {
     color: '#fff',
   },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  cardRow: {
     justifyContent: 'space-between',
-    gap: 12,
+    marginBottom: 12,
   },
   cardCell: {
-    width: '48%',
+    flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 0,
   },
   card: {
     width: '100%',
@@ -539,8 +538,12 @@ const lightStyles = StyleSheet.create({
   cardPressed: {
     opacity: 0.92,
   },
-  cardLeft: {},
-  cardRight: {},
+  cardLeft: {
+    marginRight: 6,
+  },
+  cardRight: {
+    marginLeft: 6,
+  },
   cardNo: {
     alignSelf: 'flex-end',
     fontSize: 11,
@@ -725,20 +728,17 @@ const darkStyles = StyleSheet.create({
   filterLabelActive: {
     color: '#dff8ff',
   },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  cardRow: {
     justifyContent: 'space-between',
-    gap: 12,
+    marginBottom: 12,
   },
   cardCell: {
-    width: '48%',
+    flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#2a3d61',
     padding: 1,
-    marginBottom: 0,
   },
   card: {
     width: '100%',
@@ -755,8 +755,12 @@ const darkStyles = StyleSheet.create({
   cardPressed: {
     opacity: 0.92,
   },
-  cardLeft: {},
-  cardRight: {},
+  cardLeft: {
+    marginRight: 6,
+  },
+  cardRight: {
+    marginLeft: 6,
+  },
   cardNo: {
     alignSelf: 'flex-end',
     fontSize: 11,
