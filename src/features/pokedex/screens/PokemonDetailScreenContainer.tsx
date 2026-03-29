@@ -1,6 +1,6 @@
 import { PokemonDetailScreenView } from '@/components/features/pokedex/PokemonDetailScreenView';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { usePokemonDetailScreen } from '@/src/features/pokedex/usePokemonDetailScreen';
+import { usePokemonDetailScreen } from '@/src/features/pokedex/hooks/usePokemonDetailScreen';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -8,7 +8,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 const INITIAL_MOVE_COUNT = 4;
 const MOVE_PAGE_SIZE = 8;
 
-export default function PokemonDetailScreen() {
+export function PokemonDetailScreenContainer() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
@@ -72,26 +72,16 @@ export default function PokemonDetailScreen() {
       canShowMoreMoves={canShowMoreMoves}
       onBack={() => router.back()}
       onPressMoreMoves={() =>
-        setVisibleMoveCount((prev) => prev + MOVE_PAGE_SIZE)
+        setVisibleMoveCount((prevCount) => prevCount + MOVE_PAGE_SIZE)
       }
     />
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-  },
-  pageLight: {
-    backgroundColor: '#fffdf7',
-  },
-  pageDark: {
-    backgroundColor: '#0b1020',
-  },
-  center: {
-    justifyContent: 'center',
-  },
-  errorContainer: {
-    padding: 18,
-  },
+  page: { flex: 1 },
+  pageLight: { backgroundColor: '#fffdf7' },
+  pageDark: { backgroundColor: '#0b1020' },
+  center: { justifyContent: 'center' },
+  errorContainer: { padding: 18 },
 });

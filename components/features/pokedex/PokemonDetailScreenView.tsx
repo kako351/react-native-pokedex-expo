@@ -1,4 +1,4 @@
-import type { PokemonDetailScreenData } from '@/src/features/pokedex/usePokemonDetailScreen';
+import type { PokemonDetailScreenData } from '@/src/features/pokedex/model/pokemonDetailScreenData';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { GameRadar } from '@kako351/react-native-game-radar';
 import { Image } from 'expo-image';
