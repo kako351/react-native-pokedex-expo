@@ -1,34 +1,18 @@
-import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
 import {
   usePokemonListInfinite,
   usePokemonType,
   useSpeciesQueries,
 } from '@/src/api/pokeapi/queries';
+import {
+  buildPokemonListItemModel,
+  extractPokemonIdFromResourceUrl,
+} from '@/src/features/pokedex/mappers/pokedexListMapper';
+import type { PokemonListItem } from '@/src/features/pokedex/model/pokemonListItem';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-export type PokemonListItem = {
-  id: number;
-  name: string;
-  displayName: string;
-  displayNo: string;
-  imageUrl: string;
-};
+const PER_PAGE = 30;
 
-const PER_PARGE: number = 30;
-
-const padNo = (id: number) => `#${String(id).padStart(4, '0')}`;
-
-const artworkUrl = (id: number) =>
-  `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
-
-const extractIdFromUrl = (url: string): number => {
-  // 例: https://pokeapi.co/api/v2/pokemon/25/  -> 25
-  const m = url.match(/\/pokemon\/(\d+)\//);
-  if (!m) return 0;
-  return Number(m[1]);
-};
-
-export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
+export function usePokemonList(perPage = PER_PAGE, selectedType?: string) {
   const isTypeFilterActive = !!selectedType;
   const [typePage, setTypePage] = useState(1);
   const [isTypeFetchingNextPage, setIsTypeFetchingNextPage] = useState(false);
@@ -41,14 +25,21 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
   const q = usePokemonListInfinite(perPage, !isTypeFilterActive);
   const typeQ = usePokemonType(selectedType);
   const rawFromList = useMemo(
-    () => q.data?.pages.flatMap((p) => p.results) ?? [],
+    () => q.data?.pages.flatMap((page) => page.results) ?? [],
     [q.data?.pages],
   );
   const rawFromTypeAll = useMemo(() => {
-    if (!typeQ.data) return [];
+    if (!typeQ.data) {
+      return [];
+    }
+
     return typeQ.data.pokemon
       .map((entry) => entry.pokemon)
-      .sort((a, b) => extractIdFromUrl(a.url) - extractIdFromUrl(b.url));
+      .sort(
+        (a, b) =>
+          extractPokemonIdFromResourceUrl(a.url) -
+          extractPokemonIdFromResourceUrl(b.url),
+      );
   }, [typeQ.data]);
   const rawFromType = useMemo(
     () => rawFromTypeAll.slice(0, typePage * perPage),
@@ -56,7 +47,7 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
   );
   const hasNextTypePage = rawFromType.length < rawFromTypeAll.length;
   const raw = isTypeFilterActive ? rawFromType : rawFromList;
-  const names = raw.map((r) => r.name);
+  const names = raw.map((resource) => resource.name);
 
   const speciesQueries = useSpeciesQueries(names);
   const isSpeciesLoading = speciesQueries.some(
@@ -70,23 +61,18 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
   }, [isTypeFetchingNextPage, isSpeciesLoading]);
 
   const fetchNextTypePage = useCallback(async () => {
-    if (!hasNextTypePage || isTypeFetchingNextPage) return;
+    if (!hasNextTypePage || isTypeFetchingNextPage) {
+      return;
+    }
+
     setIsTypeFetchingNextPage(true);
     setTypePage((prev) => prev + 1);
   }, [hasNextTypePage, isTypeFetchingNextPage]);
 
   const items: PokemonListItem[] = useMemo(() => {
-    return raw.map((p, idx) => {
-      const id = extractIdFromUrl(p.url);
+    return raw.map((resource, idx) => {
       const species = speciesQueries[idx]?.data;
-      const displayName = species ? pickJapaneseName(species) : p.name;
-      return {
-        id,
-        name: p.name,
-        displayName: displayName,
-        displayNo: padNo(id),
-        imageUrl: artworkUrl(id),
-      };
+      return buildPokemonListItemModel(resource.name, resource.url, species);
     });
   }, [raw, speciesQueries]);
 
@@ -105,3 +91,5 @@ export function usePokemonList(perPage = PER_PARGE, selectedType?: string) {
     refetch: isTypeFilterActive ? typeQ.refetch : q.refetch,
   };
 }
+
+export type { PokemonListItem };

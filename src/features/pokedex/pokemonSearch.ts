@@ -1,4 +1,4 @@
-import type { PokemonListItem } from './usePokemonList';
+import type { PokemonListItem } from './model/pokemonListItem';
 
 export const normalizePokemonSearchKeyword = (value: string) =>
   value.trim().toLocaleLowerCase().normalize('NFKC');

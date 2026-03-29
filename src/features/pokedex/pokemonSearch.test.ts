@@ -2,7 +2,7 @@ import {
   filterPokemonListByKeyword,
   normalizePokemonSearchKeyword,
 } from './pokemonSearch';
-import type { PokemonListItem } from './usePokemonList';
+import type { PokemonListItem } from './model/pokemonListItem';
 
 const ITEMS: PokemonListItem[] = [
   {
