@@ -1,18 +1,75 @@
 import { http } from '@/src/lib/axios';
 import {
   PokemonDetailSchema,
-  type PokemonDetail,
-} from './schema/pokemondetail';
-import { PokemonListSchema, type PokemonList } from './schema/pokemonlist';
-import {
   PokemonSpeciesSchema,
-  type PokemonSpecies,
-} from './schema/pokemonspecies';
+  PokemonListSchema,
+  EvolutionChainSchema,
+  AbilitySchema,
+  MoveSchema,
+  PokemonTypeSchema,
+} from './parsers';
 import { pokeApiEndpoints } from './endpoints';
-import { EvolutionChainSchema } from './schema/evolutionChain';
-import { AbilitySchema, type Ability } from './schema/ability';
-import { MoveSchema, type Move } from './schema/move';
-import { PokemonTypeSchema, type PokemonType } from './schema/pokemontype';
+import type {
+  Ability,
+  EvolutionChain,
+  Move,
+  PokemonDetail,
+  PokemonList,
+  PokemonSpecies,
+  PokemonType,
+} from './types';
+
+const toPokemonList = (data: any): PokemonList => ({
+  count: data.count ?? 0,
+  next: data.next ?? null,
+  previous: data.previous ?? null,
+  results: data.results ?? [],
+});
+
+const toPokemonDetail = (data: any): PokemonDetail => ({
+  id: data.id,
+  name: data.name,
+  height: data.height ?? 0,
+  weight: data.weight ?? 0,
+  base_experience: data.base_experience ?? 0,
+  types: data.types ?? [],
+  stats: data.stats ?? [],
+  abilities: data.abilities ?? [],
+  moves: data.moves ?? [],
+  sprites: {
+    front_default: data.sprites?.front_default ?? null,
+    other: data.sprites?.other,
+  },
+});
+
+const toEvolutionChainLink = (data: any): EvolutionChain['chain'] => ({
+  species: {
+    name: data?.species?.name ?? '',
+    url: data?.species?.url ?? '',
+  },
+  evolves_to: Array.isArray(data?.evolves_to)
+    ? data.evolves_to.map(toEvolutionChainLink)
+    : [],
+});
+
+const toEvolutionChain = (data: any): EvolutionChain => ({
+  id: data.id,
+  chain: toEvolutionChainLink(data.chain),
+});
+
+const toPokemonType = (data: any): PokemonType => ({
+  id: data.id,
+  name: data.name,
+  pokemon: Array.isArray(data.pokemon)
+    ? data.pokemon.map((entry: any) => ({
+        pokemon: {
+          name: entry?.pokemon?.name ?? '',
+          url: entry?.pokemon?.url ?? '',
+        },
+        slot: entry?.slot ?? 0,
+      }))
+    : [],
+});
 
 /**
  * GET /pokemon
@@ -22,7 +79,7 @@ export async function fetchPokemonList(params: {
   offset: number;
 }): Promise<PokemonList> {
   const res = await http.get(pokeApiEndpoints.pokemon, { params });
-  return PokemonListSchema.parse(res.data);
+  return toPokemonList(PokemonListSchema.parse(res.data));
 }
 
 /**
@@ -32,7 +89,7 @@ export async function fetchPokemonDetail(name: string): Promise<PokemonDetail> {
   const res = await http.get(
     `${pokeApiEndpoints.pokemon}/${encodeURIComponent(name)}`,
   );
-  return PokemonDetailSchema.parse(res.data);
+  return toPokemonDetail(PokemonDetailSchema.parse(res.data));
 }
 
 /**
@@ -53,7 +110,8 @@ export async function fetchPokemonSpecies(
  */
 export async function fetchEvolutionChain(url: string) {
   const res = await http.get(url);
-  return EvolutionChainSchema.parse(res.data);
+  EvolutionChainSchema.parse(res.data);
+  return toEvolutionChain(res.data);
 }
 
 /**
@@ -79,5 +137,5 @@ export async function fetchPokemonType(typeName: string): Promise<PokemonType> {
   const res = await http.get(
     `${pokeApiEndpoints.type}/${encodeURIComponent(typeName)}`,
   );
-  return PokemonTypeSchema.parse(res.data);
+  return toPokemonType(PokemonTypeSchema.parse(res.data));
 }

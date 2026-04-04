@@ -37,6 +37,7 @@ Expo + React Native + Expo Router で構築した、PokeAPI ベースの Pokéde
 - TanStack Query
 - Axios
 - Zod
+- Orval
 
 ## セットアップ
 
@@ -67,6 +68,24 @@ npm run format:check
 npm run lint:fix
 npm run format
 ```
+
+## スキーマ生成
+
+PokeAPI の OpenAPI 定義から Zod スキーマと API クライアントを自動生成できます。
+
+```bash
+npm run generate:pokeapi-schemas
+```
+
+- OpenAPI 入力: `https://raw.githubusercontent.com/PokeAPI/pokeapi/master/openapi.yml`
+- Orval 設定: `orval.config.mjs`
+- PokeAPI 固有の OpenAPI 補正: `scripts/transform-pokeapi-openapi.mjs`
+- 生成先: `src/api/pokeapi/generated/`
+
+補足:
+
+- PokeAPI の OpenAPI には `type: ''` のような不正な型定義が一部含まれるため、生成前に transformer で補正しています。
+- 現在のアプリで未使用かつ Orval 生成と相性の悪い `/api/v2/pokemon/{pokemon_id}/encounters` は生成対象から除外しています。
 
 ## E2E テスト（Maestro）
 
