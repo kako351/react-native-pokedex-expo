@@ -1,4 +1,4 @@
-import type { PokemonSpecies } from './schema/pokemonspecies';
+import type { PokemonSpecies } from './types';
 
 const normalizeFlavor = (s: string) =>
   s.replace(/\n|\f/g, ' ').replace(/\s+/g, ' ').trim();

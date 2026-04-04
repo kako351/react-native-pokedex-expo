@@ -3,7 +3,7 @@ import {
   pickJapaneseGenus,
   pickJapaneseName,
 } from './pokemonSpeciesMapper';
-import type { PokemonSpecies } from './schema/pokemonspecies';
+import type { PokemonSpecies } from './types';
 
 function createSpecies(
   overrides: Partial<PokemonSpecies> = {},

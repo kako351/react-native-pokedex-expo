@@ -1,5 +1,5 @@
 import { pickJapaneseName } from '@/src/api/pokeapi/pokemonSpeciesMapper';
-import type { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
+import type { PokemonSpecies } from '@/src/api/pokeapi/types';
 import type { PokemonListItem } from '@/src/features/pokedex/model/pokemonListItem';
 
 export const toPokemonDisplayNo = (id: number) =>

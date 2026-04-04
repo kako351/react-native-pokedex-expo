@@ -2,9 +2,11 @@ import {
   pickJapaneseFlavorText,
   pickJapaneseName,
 } from '@/src/api/pokeapi/pokemonSpeciesMapper';
-import type { EvolutionChain } from '@/src/api/pokeapi/schema/evolutionChain';
-import type { PokemonDetail } from '@/src/api/pokeapi/schema/pokemondetail';
-import type { PokemonSpecies } from '@/src/api/pokeapi/schema/pokemonspecies';
+import type {
+  EvolutionChain,
+  PokemonDetail,
+  PokemonSpecies,
+} from '@/src/api/pokeapi/types';
 import type { PokemonDetailScreenData } from '@/src/features/pokedex/model/pokemonDetailScreenData';
 import { toJapaneseTypeLabel } from '@/src/features/pokedex/pokemonTypeLabel';
 

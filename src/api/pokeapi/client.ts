@@ -1,19 +1,23 @@
 import { http } from '@/src/lib/axios';
 import {
   PokemonDetailSchema,
-  type PokemonDetail,
-} from './schema/pokemondetail';
-import { PokemonListSchema, type PokemonList } from './schema/pokemonlist';
-import {
   PokemonSpeciesSchema,
-  type PokemonSpecies,
-} from './schema/pokemonspecies';
+  PokemonListSchema,
+  EvolutionChainSchema,
+  AbilitySchema,
+  MoveSchema,
+  PokemonTypeSchema,
+} from './parsers';
 import { pokeApiEndpoints } from './endpoints';
-import { EvolutionChainSchema } from './schema/evolutionChain';
-import type { EvolutionChain } from './schema/evolutionChain';
-import { AbilitySchema, type Ability } from './schema/ability';
-import { MoveSchema, type Move } from './schema/move';
-import { PokemonTypeSchema, type PokemonType } from './schema/pokemontype';
+import type {
+  Ability,
+  EvolutionChain,
+  Move,
+  PokemonDetail,
+  PokemonList,
+  PokemonSpecies,
+  PokemonType,
+} from './types';
 
 const toPokemonList = (data: any): PokemonList => ({
   count: data.count ?? 0,
