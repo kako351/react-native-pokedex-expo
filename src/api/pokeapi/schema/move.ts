@@ -1,14 +1,17 @@
-import { z } from 'zod';
-import { NamedApiResource } from './namedApiResource';
+import { MoveDetail } from '../generated/schema/index.zod';
 
-export const MoveSchema = z.object({
-  name: z.string(),
-  names: z.array(
-    z.object({
-      name: z.string(),
-      language: NamedApiResource,
-    }),
-  ),
+export const MoveSchema = MoveDetail.pick({
+  name: true,
+  names: true,
 });
 
-export type Move = z.infer<typeof MoveSchema>;
+export type Move = {
+  name: string;
+  names: {
+    name: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }[];
+};

@@ -1,15 +1,19 @@
-import { z } from 'zod';
-import { NamedApiResource } from './namedApiResource';
+import { TypeDetail } from '../generated/schema/index.zod';
 
-export const PokemonTypeSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  pokemon: z.array(
-    z.object({
-      pokemon: NamedApiResource,
-      slot: z.number(),
-    }),
-  ),
+export const PokemonTypeSchema = TypeDetail.pick({
+  id: true,
+  name: true,
+  pokemon: true,
 });
 
-export type PokemonType = z.infer<typeof PokemonTypeSchema>;
+export type PokemonType = {
+  id: number;
+  name: string;
+  pokemon: {
+    pokemon: {
+      name: string;
+      url: string;
+    };
+    slot: number;
+  }[];
+};

@@ -1,35 +1,45 @@
-import { z } from 'zod';
-import { NamedApiResource } from './namedApiResource';
+import { PokemonSpeciesDetail } from '../generated/schema/index.zod';
 
-export const PokemonSpeciesSchema = z.object({
-  name: z.string(),
-
-  evolution_chain: z.object({
-    url: z.string(),
-  }),
-
-  names: z.array(
-    z.object({
-      name: z.string(),
-      language: NamedApiResource,
-    }),
-  ),
-
-  genera: z.array(
-    z.object({
-      genus: z.string(),
-      language: NamedApiResource,
-    }),
-  ),
-
-  flavor_text_entries: z.array(
-    z.object({
-      flavor_text: z.string(),
-      language: NamedApiResource,
-      version: NamedApiResource.optional(),
-      version_group: NamedApiResource.optional(),
-    }),
-  ),
+export const PokemonSpeciesSchema = PokemonSpeciesDetail.pick({
+  name: true,
+  evolution_chain: true,
+  names: true,
+  genera: true,
+  flavor_text_entries: true,
 });
 
-export type PokemonSpecies = z.infer<typeof PokemonSpeciesSchema>;
+export type PokemonSpecies = {
+  name: string;
+  evolution_chain: {
+    url: string;
+  };
+  names: {
+    name: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }[];
+  genera: {
+    genus: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }[];
+  flavor_text_entries: {
+    flavor_text: string;
+    language: {
+      name: string;
+      url: string;
+    };
+    version?: {
+      name: string;
+      url: string;
+    };
+    version_group?: {
+      name: string;
+      url: string;
+    };
+  }[];
+};

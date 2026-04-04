@@ -37,6 +37,7 @@ Expo + React Native + Expo Router で構築した、PokeAPI ベースの Pokéde
 - TanStack Query
 - Axios
 - Zod
+- Orval
 
 ## セットアップ
 

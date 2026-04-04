@@ -1,14 +1,13 @@
-import { z } from 'zod';
+import { PaginatedPokemonSummaryList } from '../generated/schema/index.zod';
 
-export const PokemonListSchema = z.object({
-  count: z.number(),
-  next: z.string().nullable(),
-  previous: z.string().nullable(),
-  results: z.array(
-    z.object({
-      name: z.string(),
-      url: z.string(),
-    }),
-  ),
-});
-export type PokemonList = z.infer<typeof PokemonListSchema>;
+export const PokemonListSchema = PaginatedPokemonSummaryList;
+
+export type PokemonList = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+};
