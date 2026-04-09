@@ -144,32 +144,17 @@ function ListHeader({
 
   return (
     <>
-      {isDark ? (
-        <View style={styles.headerPanel}>
-          <View style={styles.headerRow}>
-            <Text style={styles.title}>Pokédex</Text>
-            <Text style={styles.subtitle}>図鑑スキャンを開始しよう</Text>
-            <View style={styles.missionBadge}>
-              <Text style={styles.missionBadgeLabel}>MISSION 151+</Text>
-            </View>
-          </View>
-          <View style={styles.ball}>
-            <View style={styles.ballInner} />
-          </View>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>Pokédex</Text>
+          <Text style={styles.subtitle}>
+            見つけたポケモンをコレクションしよう
+          </Text>
         </View>
-      ) : (
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>Pokédex</Text>
-            <Text style={styles.subtitle}>
-              見つけたポケモンをコレクションしよう
-            </Text>
-          </View>
-          <View style={styles.ball}>
-            <View style={styles.ballInner} />
-          </View>
+        <View style={styles.ball}>
+          <View style={styles.ballInner} />
         </View>
-      )}
+      </View>
 
       <View style={styles.searchBox}>
         <MaterialIcons name="search" size={20} color={iconColor} />
@@ -440,7 +425,11 @@ const darkStyles = StyleSheet.create({
   inlineLoader: { marginTop: 24 },
   errorText: { marginTop: 120, paddingHorizontal: 18 },
   inlineErrorText: { marginTop: 24, paddingHorizontal: 18 },
-  headerRow: { flex: 1, justifyContent: 'center' },
+  headerRow: { 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerPanel: {
     flexDirection: 'row',
     justifyContent: 'space-between',
