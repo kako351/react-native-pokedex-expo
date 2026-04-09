@@ -346,7 +346,6 @@ const lightStyles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    borderRadius: 7,
     backgroundColor: '#ffffff',
     borderWidth: 2,
     borderColor: '#1f242d',
