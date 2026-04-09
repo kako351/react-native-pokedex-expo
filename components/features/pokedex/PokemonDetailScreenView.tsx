@@ -12,8 +12,6 @@ import Animated, {
   useScrollOffset,
 } from 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
 type TypeItem = PokemonDetailScreenData['types'][number];
 type BaseStatItem = PokemonDetailScreenData['baseStats'][number];
 type ScreenStyles = ReturnType<typeof StyleSheet.create>;
@@ -151,6 +149,7 @@ const COLLAPSED_HEADER_HEIGHT = 92;
 const COLLAPSE_RANGE = EXPANDED_HEADER_HEIGHT - COLLAPSED_HEADER_HEIGHT;
 
 type PokemonDetailScreenViewProps = {
+  isDark: boolean;
   data: PokemonDetailScreenData;
   canShowMoreMoves: boolean;
   onBack: () => void;
@@ -158,13 +157,12 @@ type PokemonDetailScreenViewProps = {
 };
 
 export function PokemonDetailScreenView({
+  isDark,
   data,
   canShowMoreMoves,
   onBack,
   onPressMoreMoves,
 }: PokemonDetailScreenViewProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const styles = isDark ? darkStyles : lightStyles;
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();

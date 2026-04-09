@@ -68,6 +68,7 @@ export function PokemonDetailScreenContainer() {
 
   return (
     <PokemonDetailScreenView
+      isDark={isDark}
       data={screenQ.data}
       canShowMoreMoves={canShowMoreMoves}
       onBack={() => router.back()}
