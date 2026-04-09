@@ -7,10 +7,21 @@ import {
   buildPokemonListItemModel,
   extractPokemonIdFromResourceUrl,
 } from '@/src/features/pokedex/mappers/pokedexListMapper';
+import type { PokemonList, PokemonType } from '@/src/api/pokeapi/types';
 import type { PokemonListItem } from '@/src/features/pokedex/model/pokemonListItem';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const PER_PAGE = 30;
+
+type PokemonResource = NonNullable<PokemonList['results']>[number];
+type PokemonTypeResource = NonNullable<
+  PokemonType['pokemon']
+>[number]['pokemon'];
+
+const hasResourceUrl = (
+  resource: PokemonResource | PokemonTypeResource | undefined,
+): resource is PokemonResource =>
+  typeof resource?.name === 'string' && typeof resource?.url === 'string';
 
 export function usePokemonList(perPage = PER_PAGE, selectedType?: string) {
   const isTypeFilterActive = !!selectedType;
@@ -25,7 +36,9 @@ export function usePokemonList(perPage = PER_PAGE, selectedType?: string) {
   const q = usePokemonListInfinite(perPage, !isTypeFilterActive);
   const typeQ = usePokemonType(selectedType);
   const rawFromList = useMemo(
-    () => q.data?.pages.flatMap((page) => page.results) ?? [],
+    () =>
+      q.data?.pages.flatMap((page) => page.results).filter(hasResourceUrl) ??
+      [],
     [q.data?.pages],
   );
   const rawFromTypeAll = useMemo(() => {
@@ -35,6 +48,7 @@ export function usePokemonList(perPage = PER_PAGE, selectedType?: string) {
 
     return typeQ.data.pokemon
       .map((entry) => entry.pokemon)
+      .filter(hasResourceUrl)
       .sort(
         (a, b) =>
           extractPokemonIdFromResourceUrl(a.url) -
@@ -47,7 +61,9 @@ export function usePokemonList(perPage = PER_PAGE, selectedType?: string) {
   );
   const hasNextTypePage = rawFromType.length < rawFromTypeAll.length;
   const raw = isTypeFilterActive ? rawFromType : rawFromList;
-  const names = raw.map((resource) => resource.name);
+  const names = raw
+    .map((resource) => resource.name)
+    .filter((name): name is string => typeof name === 'string');
 
   const speciesQueries = useSpeciesQueries(names);
   const isSpeciesLoading = speciesQueries.some(

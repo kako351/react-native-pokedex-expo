@@ -66,8 +66,7 @@ export const pokemonKeys = {
 export function usePokemonListInfinite(limit = PER_PARGE, enabled = true) {
   return useInfiniteQuery({
     queryKey: pokemonKeys.list({ limit }),
-    queryFn: ({ pageParam }) =>
-      fetchPokemonList({ limit, offset: pageParam as number }),
+    queryFn: ({ pageParam }) => fetchPokemonList({ limit, offset: pageParam }),
     enabled,
     initialPageParam: INITIAL_PAGE,
     getNextPageParam: (lastPage, allPages) => {
@@ -86,7 +85,12 @@ export function usePokemonListInfinite(limit = PER_PARGE, enabled = true) {
 export function usePokemonType(typeName?: string) {
   return useQuery({
     queryKey: typeName ? pokemonKeys.type(typeName) : pokemonKeys.all,
-    queryFn: () => fetchPokemonType(typeName!),
+    queryFn: () => {
+      if (!typeName) {
+        throw new Error('typeName is required');
+      }
+      return fetchPokemonType(typeName);
+    },
     enabled: !!typeName,
     staleTime: STALE_TIME,
   });
@@ -162,7 +166,12 @@ export function useDetailQueries(names: string[]) {
 export function useEvolutionChain(url?: string) {
   return useQuery({
     queryKey: url ? pokemonKeys.evolutionChain(url) : pokemonKeys.all,
-    queryFn: () => fetchEvolutionChain(url!),
+    queryFn: () => {
+      if (!url) {
+        throw new Error('url is required');
+      }
+      return fetchEvolutionChain(url);
+    },
     enabled: !!url,
     staleTime: STALE_TIME,
   });

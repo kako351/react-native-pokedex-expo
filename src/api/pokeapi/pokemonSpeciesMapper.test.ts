@@ -119,10 +119,12 @@ describe('pokemonSpeciesMapper', () => {
           {
             flavor_text: 'ふるい せつめい',
             language: { name: 'ja-Hrkt', url: '' },
+            version: { name: 'red', url: '' },
           },
           {
             flavor_text: 'あたらしい せつめい',
             language: { name: 'ja-Hrkt', url: '' },
+            version: { name: 'blue', url: '' },
           },
         ],
       });
@@ -140,6 +142,7 @@ describe('pokemonSpeciesMapper', () => {
           {
             flavor_text: 'Seed Pokemon',
             language: { name: 'en', url: '' },
+            version: { name: 'red', url: '' },
           },
         ],
       });

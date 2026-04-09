@@ -118,8 +118,8 @@ export const buildPokemonDetailScreenModel = ({
     types,
     description:
       pickJapaneseFlavorText(species) ?? '図鑑説明が見つかりませんでした',
-    heightText: toPokemonHeightText(detail.height),
-    weightText: toPokemonWeightText(detail.weight),
+    heightText: toPokemonHeightText(detail.height ?? 0),
+    weightText: toPokemonWeightText(detail.weight ?? 0),
     abilityText: abilityNames.join(' / ') || '-',
     expText: String(detail.base_experience ?? '-'),
     baseStats,
