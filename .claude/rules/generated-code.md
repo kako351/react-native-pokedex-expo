@@ -1,6 +1,6 @@
 ---
 description: Orval で自動生成されたファイルの取り扱いルール
-globs: ["src/api/pokeapi/generated/**"]
+globs: ['src/api/pokeapi/generated/**']
 alwaysApply: true
 ---
 

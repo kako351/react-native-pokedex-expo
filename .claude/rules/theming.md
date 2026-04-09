@@ -1,6 +1,11 @@
 ---
 description: ライト/ダークテーマのスタイリングパターン
-globs: ["components/**/*.tsx", "src/features/**/components/**/*.tsx", "hooks/use-theme-color.ts"]
+globs:
+  [
+    'components/**/*.tsx',
+    'src/features/**/components/**/*.tsx',
+    'hooks/use-theme-color.ts',
+  ]
 alwaysApply: false
 ---
 
@@ -16,7 +21,10 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 // カスタムカラー
-const backgroundColor = useThemeColor({ light: '#fff', dark: '#000' }, 'background');
+const backgroundColor = useThemeColor(
+  { light: '#fff', dark: '#000' },
+  'background',
+);
 ```
 
 ## フィーチャー固有のスタイル

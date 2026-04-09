@@ -1,6 +1,11 @@
 ---
 description: API通信・データフェッチングのパターン（React Query + Zod + Axios）
-globs: ["src/api/**/*.ts", "src/features/**/hooks/*.ts", "src/features/**/queries.ts"]
+globs:
+  [
+    'src/api/**/*.ts',
+    'src/features/**/hooks/*.ts',
+    'src/features/**/queries.ts',
+  ]
 alwaysApply: false
 ---
 
@@ -24,7 +29,9 @@ API レスポンスは必ず Zod スキーマで `parse()` してバリデーシ
 
 ```typescript
 export async function fetchPokemonDetail(name: string): Promise<PokemonDetail> {
-  const res = await http.get(`${pokeApiEndpoints.pokemon}/${encodeURIComponent(name)}`);
+  const res = await http.get(
+    `${pokeApiEndpoints.pokemon}/${encodeURIComponent(name)}`,
+  );
   return toPokemonDetail(PokemonDetailSchema.parse(res.data));
 }
 ```
@@ -52,7 +59,9 @@ API エラーは `ApiError.fromStatus()` で統一して処理する。
 try {
   const data = await fetchPokemonDetail(name);
 } catch (error) {
-  const apiError = ApiError.fromStatus(axios.isAxiosError(error) ? error.response?.status : undefined);
+  const apiError = ApiError.fromStatus(
+    axios.isAxiosError(error) ? error.response?.status : undefined,
+  );
   // apiError.code で分岐 ('NOT_FOUND' | 'NETWORK_ERROR' | 'SERVER_ERROR')
 }
 ```

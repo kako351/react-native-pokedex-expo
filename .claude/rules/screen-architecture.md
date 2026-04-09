@@ -1,6 +1,6 @@
 ---
 description: スクリーンのアーキテクチャパターン（ルート/コンテナ/ビューの分離）
-globs: ["app/**/*.tsx", "src/features/**/*.tsx", "src/features/**/*.ts"]
+globs: ['app/**/*.tsx', 'src/features/**/*.tsx', 'src/features/**/*.ts']
 alwaysApply: false
 ---
 

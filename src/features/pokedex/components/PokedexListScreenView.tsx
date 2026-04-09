@@ -425,7 +425,7 @@ const darkStyles = StyleSheet.create({
   inlineLoader: { marginTop: 24 },
   errorText: { marginTop: 120, paddingHorizontal: 18 },
   inlineErrorText: { marginTop: 24, paddingHorizontal: 18 },
-  headerRow: { 
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
