@@ -268,16 +268,6 @@ export function PokemonDetailScreenView({
               </Text>
               <TypeChips items={types} styles={styles} />
             </View>
-            {isDark ? (
-              <View style={styles.heroBadge}>
-                <MaterialIcons
-                  name="sports-esports"
-                  size={14}
-                  color="#9af0ff"
-                />
-                <Text style={styles.heroBadgeLabel}>BATTLE DATA</Text>
-              </View>
-            ) : null}
           </View>
 
           <View style={styles.heroImageStage}>
