@@ -152,6 +152,8 @@ function ListHeader({
           </Text>
         </View>
         <View style={styles.ball}>
+          <View style={styles.ballBottomHalf} />
+          <View style={styles.ballBand} />
           <View style={styles.ballInner} />
         </View>
       </View>
@@ -316,19 +318,39 @@ const lightStyles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    borderWidth: 2,
+    borderWidth: 0,
     borderColor: '#1f242d',
     backgroundColor: '#f15d5d',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  ballBottomHalf: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 23,
+    backgroundColor: '#ffffff',
+  },
+  ballBand: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 5,
+    top: 20,
+    backgroundColor: '#1f242d',
+    zIndex: 1,
   },
   ballInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderRadius: 7,
+    backgroundColor: '#ffffff',
     borderWidth: 2,
     borderColor: '#1f242d',
+    zIndex: 2,
   },
   searchBox: {
     marginTop: 14,
@@ -468,19 +490,38 @@ const darkStyles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    borderWidth: 2,
+    borderWidth: 0,
     borderColor: '#d8e7ff',
     backgroundColor: '#ff5b5b',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  ballBottomHalf: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 23,
+    backgroundColor: '#e8f0ff',
+  },
+  ballBand: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 5,
+    top: 20,
+    backgroundColor: '#0d1525',
+    zIndex: 1,
   },
   ballInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: '#e8f0ff',
     borderWidth: 2,
-    borderColor: '#273b57',
+    borderColor: '#0d1525',
+    zIndex: 2,
   },
   searchBox: {
     marginTop: 14,
