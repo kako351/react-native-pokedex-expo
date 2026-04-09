@@ -43,6 +43,7 @@ export default function TabLayout() {
         name="explore"
         options={{
           href: null,
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>
