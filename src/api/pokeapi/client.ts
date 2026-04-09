@@ -1,4 +1,5 @@
 import { http } from '@/src/lib/axios';
+import { z } from 'zod';
 import {
   PokemonDetailSchema,
   PokemonSpeciesSchema,
@@ -19,14 +20,19 @@ import type {
   PokemonType,
 } from './types';
 
-const toPokemonList = (data: any): PokemonList => ({
+type ParsedPokemonList = z.infer<typeof PokemonListSchema>;
+type ParsedPokemonDetail = z.infer<typeof PokemonDetailSchema>;
+type ParsedEvolutionChain = z.infer<typeof EvolutionChainSchema>;
+type ParsedPokemonType = z.infer<typeof PokemonTypeSchema>;
+
+const toPokemonList = (data: ParsedPokemonList): PokemonList => ({
   count: data.count ?? 0,
   next: data.next ?? null,
   previous: data.previous ?? null,
   results: data.results ?? [],
 });
 
-const toPokemonDetail = (data: any): PokemonDetail => ({
+const toPokemonDetail = (data: ParsedPokemonDetail): PokemonDetail => ({
   id: data.id,
   name: data.name,
   height: data.height ?? 0,
@@ -38,11 +44,22 @@ const toPokemonDetail = (data: any): PokemonDetail => ({
   moves: data.moves ?? [],
   sprites: {
     front_default: data.sprites?.front_default ?? null,
-    other: data.sprites?.other,
+    other: data.sprites?.other
+      ? {
+          'official-artwork': data.sprites.other['official-artwork']
+            ? {
+                front_default:
+                  data.sprites.other['official-artwork'].front_default ?? null,
+              }
+            : undefined,
+        }
+      : undefined,
   },
 });
 
-const toEvolutionChainLink = (data: any): EvolutionChain['chain'] => ({
+const toEvolutionChainLink = (
+  data: ParsedEvolutionChain['chain'],
+): EvolutionChain['chain'] => ({
   species: {
     name: data?.species?.name ?? '',
     url: data?.species?.url ?? '',
@@ -52,16 +69,16 @@ const toEvolutionChainLink = (data: any): EvolutionChain['chain'] => ({
     : [],
 });
 
-const toEvolutionChain = (data: any): EvolutionChain => ({
+const toEvolutionChain = (data: ParsedEvolutionChain): EvolutionChain => ({
   id: data.id,
   chain: toEvolutionChainLink(data.chain),
 });
 
-const toPokemonType = (data: any): PokemonType => ({
+const toPokemonType = (data: ParsedPokemonType): PokemonType => ({
   id: data.id,
   name: data.name,
   pokemon: Array.isArray(data.pokemon)
-    ? data.pokemon.map((entry: any) => ({
+    ? data.pokemon.map((entry) => ({
         pokemon: {
           name: entry?.pokemon?.name ?? '',
           url: entry?.pokemon?.url ?? '',
