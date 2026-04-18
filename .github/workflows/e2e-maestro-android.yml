@@ -37,6 +37,9 @@ jobs:
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
+      - name: Generate Android native project
+        run: npx expo prebuild --platform android --non-interactive --no-install
+
       - name: Build Debug APK
         working-directory: android
         run: ./gradlew :app:assembleDebug --no-daemon
